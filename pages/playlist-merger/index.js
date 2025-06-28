@@ -1,4 +1,5 @@
 const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
+const selectedPlaylists = new Set();
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
 
@@ -14,8 +15,6 @@ if (!accessToken) {
     .then(data => {
     const container = document.getElementById('playlist-container');
     container.innerHTML = '';
-
-    const selectedPlaylists = new Set();
 
     data.items.forEach(playlist => {
         const btn = document.createElement('button');
@@ -88,7 +87,6 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
 });
 
 
-const selectedPlaylists = new Set();
 const row = document.getElementById('selectedPlaylistsRow');
 
 function addPlaylistBox(playlist) {
