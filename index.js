@@ -1,4 +1,4 @@
-import { generateCodeVerifier, generateCodeChallenge } from './functions/PKCE authenticator';
+import { generateCodeVerifier, generateCodeChallenge } from './pkce-authenticator';
 
 function updateUIForAuth() {
   const loginBtn = document.getElementById('login');
