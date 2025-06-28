@@ -84,3 +84,33 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
     friendDiv.innerHTML = '<p>Failed to load friend playlists.</p>';
   }
 });
+
+
+const selectedPlaylists = new Set();
+const row = document.getElementById('selectedPlaylistsRow');
+
+function addPlaylistBox(playlist) {
+  const box = document.createElement('div');
+  box.className = 'selected-playlist-box';
+  box.dataset.playlistId = playlist.id;
+  box.textContent = playlist.name;
+  row.appendChild(box);
+}
+
+function removePlaylistBox(playlistId) {
+  const box = row.querySelector(`[data-playlist-id="${playlistId}"]`);
+  if (box) box.remove();
+}
+
+// Inside the playlist button loop:
+btn.addEventListener('click', () => {
+  btn.classList.toggle('selected');
+
+  if (selectedPlaylists.has(playlist.id)) {
+    selectedPlaylists.delete(playlist.id);
+    removePlaylistBox(playlist.id);
+  } else {
+    selectedPlaylists.add(playlist.id);
+    addPlaylistBox(playlist);
+  }
+});
