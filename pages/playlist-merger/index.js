@@ -103,3 +103,20 @@ function removePlaylistBox(playlistId) {
   const box = row.querySelector(`[data-playlist-id="${playlistId}"]`);
   if (box) box.remove();
 }
+
+
+document.getElementById('mergePlaylists').addEventListener('click', () => {
+  if (selectedPlaylists.size === 0) {
+    alert('Please select at least one playlist to merge.');
+    return;
+  }
+
+  console.log('Selected Playlists:', Array.from(selectedPlaylists));
+
+//   const playlistIds = Array.from(selectedPlaylists);
+//   console.log('Merging playlists:', playlistIds);
+
+  // Here you would typically call your backend API to merge the playlists
+  // For now, we'll just log the IDs
+//   alert(`Merging playlists: ${playlistIds.join(', ')}`);
+});
