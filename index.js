@@ -1,4 +1,4 @@
-import { generateCodeVerifier, generateCodeChallenge } from './pkce-authenticator.js';
+import { generateCodeVerifier, generateCodeChallenge } from './functions/pkce-authenticator.js';
 
 
 
