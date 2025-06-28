@@ -110,11 +110,27 @@ document.getElementById('mergePlaylists').addEventListener('click', () => {
   }
 
   console.log('Selected Playlists:', Array.from(selectedPlaylists));
-
-//   const playlistIds = Array.from(selectedPlaylists);
-//   console.log('Merging playlists:', playlistIds);
-
-  // Here you would typically call your backend API to merge the playlists
-  // For now, we'll just log the IDs
-//   alert(`Merging playlists: ${playlistIds.join(', ')}`);
 });
+
+function showUnselectedPlaylists() {
+  const container = document.getElementById('replaceablePlaylists');
+  container.innerHTML = ''; // Clear previous list
+
+  const unselected = allPlaylists.filter(p => !selectedPlaylists.has(p.id));
+
+  unselected.forEach(playlist => {
+    const div = document.createElement('div');
+    div.textContent = playlist.name;
+    div.style.padding = '5px 0';
+    container.appendChild(div);
+  });
+}
+
+document.getElementById('includeTracks').addEventListener('change', (e) => {
+  if (e.target.checked) {
+    showUnselectedPlaylists();
+  } else {
+    document.getElementById('replaceablePlaylists').innerHTML = '';
+  }
+});
+
