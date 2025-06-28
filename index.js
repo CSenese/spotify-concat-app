@@ -94,6 +94,5 @@ getAccessToken();
 
 
 window.onload = () => {
-  getAccessToken(); // maybe updates `accessToken`
   updateUIForAuth(); // show/hide sections
 };
