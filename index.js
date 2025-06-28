@@ -25,7 +25,6 @@ function storeAccessToken(token) {
 if (accessToken) {
   // If access token is already available, update the UI
   updateUIForAuth();
-  storeAccessToken(accessToken);
 }
 
 document.getElementById('login').onclick = async () => {
