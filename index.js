@@ -18,6 +18,7 @@ function updateUIForAuth() {
 let accessToken = sessionStorage.getItem('access_token') || null;
 
 function storeAccessToken(token) {
+  console.log('Storing access token:', token);
   accessToken = token;
   sessionStorage.setItem('access_token', token);
 }
