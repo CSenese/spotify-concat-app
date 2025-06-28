@@ -121,7 +121,7 @@ document.getElementById('mergePlaylists').addEventListener('click', () => {
 });
 
 function showUnselectedPlaylists() {
-  const container = document.getElementById('selectedPlaylists');
+  const container = document.getElementById('replaceablePlaylists');
   container.innerHTML = ''; // Clear previous buttons
 
   const unselected = allPlaylists.filter(p => !selectedPlaylists.has(p.id));
