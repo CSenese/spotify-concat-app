@@ -26,8 +26,10 @@ if (!accessToken) {
         btn.classList.toggle('selected');
         if (selectedPlaylists.has(playlist.id)) {
             selectedPlaylists.delete(playlist.id);
+            removePlaylistBox(playlist.id);
         } else {
             selectedPlaylists.add(playlist.id);
+            addPlaylistBox(playlist);
         }
 
         console.log(Array.from(selectedPlaylists)); // Optional: for debugging
@@ -101,16 +103,3 @@ function removePlaylistBox(playlistId) {
   const box = row.querySelector(`[data-playlist-id="${playlistId}"]`);
   if (box) box.remove();
 }
-
-// Inside the playlist button loop:
-btn.addEventListener('click', () => {
-  btn.classList.toggle('selected');
-
-  if (selectedPlaylists.has(playlist.id)) {
-    selectedPlaylists.delete(playlist.id);
-    removePlaylistBox(playlist.id);
-  } else {
-    selectedPlaylists.add(playlist.id);
-    addPlaylistBox(playlist);
-  }
-});
