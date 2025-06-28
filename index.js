@@ -91,8 +91,3 @@ async function getAccessToken() {
 }
 
 getAccessToken();
-
-
-window.onload = () => {
-  updateUIForAuth(); // show/hide sections
-};
