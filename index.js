@@ -1,9 +1,11 @@
 import { generateCodeVerifier, generateCodeChallenge } from './pkce-authenticator.js';
 
+
+
 function updateUIForAuth() {
   const loginBtn = document.getElementById('login');
   const loggedInSection = document.getElementById('loggedIn');
-
+  
   if (accessToken) {
     loginBtn.style.display = 'none';
     loggedInSection.style.display = 'block';
@@ -13,6 +15,18 @@ function updateUIForAuth() {
   }
 }
 
+let accessToken = sessionStorage.getItem('access_token') || null;
+
+function storeAccessToken(token) {
+  accessToken = token;
+  sessionStorage.setItem('access_token', token);
+}
+
+if (accessToken) {
+  // If access token is already available, update the UI
+  updateUIForAuth();
+  storeAccessToken(accessToken);
+}
 
 document.getElementById('login').onclick = async () => {
   const codeVerifier = generateCodeVerifier();
@@ -59,14 +73,15 @@ async function getAccessToken() {
   });
 
   const data = await response.json();
-  let access_token = data.access_token;
+  access_token = data.access_token;
   if (!access_token) {
     console.error('Failed to retrieve access token:', data);
     return;
   }
-  updateUIForAuth();
+
   console.log('Access Token:', data.access_token);
-  // Store and use access_token for API calls
+  storeAccessToken(data.access_token);
+  updateUIForAuth();
 }
 
 getAccessToken();
