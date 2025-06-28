@@ -45,7 +45,6 @@ if (!accessToken) {
 
 document.getElementById('searchFriend').addEventListener('click', async () => {
   const userId = document.getElementById('friendUserId').value.trim();
-  const token = sessionStorage.getItem('spotifyAccessToken');
 
   if (!userId) {
     alert('Please enter a Spotify username');
@@ -57,7 +56,7 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
 
   try {
     const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${accessToken}` }
     });
 
     const data = await res.json();
