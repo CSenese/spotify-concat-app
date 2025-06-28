@@ -1,4 +1,4 @@
-const accessToken = sessionStorage.getItem('spotifyAccessToken'); // or manually paste one for testing
+const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
 
