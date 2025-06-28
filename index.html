@@ -11,6 +11,13 @@
   <div id="loggedIn" style="display: none;">
     <h2>Welcome! You're authenticated.</h2>
     <button id="mergePlaylists">Merge My Playlists</button>
+
+    <script>
+      document.getElementById('mergePlaylists').addEventListener('click', () => {
+        // Navigate to playlist page
+        window.location.href = './pages/playlist-merger/index.html';
+      });
+    </script>
   </div>
 
   <script type="module" src="index.js"></script>
