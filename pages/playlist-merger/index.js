@@ -149,12 +149,18 @@ function showUnselectedPlaylists() {
 
 
 document.getElementById('includeTracks').addEventListener('change', (e) => {
+  const playlistNameInput = document.getElementById('playlistName');
+  const replaceableContainer = document.getElementById('replaceablePlaylists');
+
   if (e.target.checked) {
     showUnselectedPlaylists();
   } else {
-    document.getElementById('replaceablePlaylists').innerHTML = '';
+    replaceableContainer.innerHTML = '';
+    playlistNameInput.disabled = false; // 🔥 Re-enable the input
+    playlistNameInput.value = '';       // (Optional) clear it
   }
 });
+
 
 
 document.getElementById('playlistName').addEventListener('focus', () => {
