@@ -73,8 +73,9 @@ async function getAccessToken() {
   });
 
   const data = await response.json();
-  access_token = data.access_token;
-  if (!access_token) {
+  console.log('Response from token endpoint:', data);
+  accessToken = data.access_token;
+  if (!accessToken) {
     console.error('Failed to retrieve access token:', data);
     return;
   }
