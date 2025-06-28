@@ -56,6 +56,11 @@ async function getAccessToken() {
 
   const codeVerifier = localStorage.getItem('code_verifier');
 
+  if (!codeVerifier) {
+    console.error('Code verifier not found in localStorage.');  
+    return;
+  }
+
   const body = new URLSearchParams({
     client_id: '97462b80a7864533a23a82791a1f662f',
     grant_type: 'authorization_code',
