@@ -1,3 +1,62 @@
-document.getElementById('login').onclick = () => {
-  window.location.href = 'https://accounts.spotify.com/authorize?...'; // You'll build this dynamically later
+document.getElementById('login').onclick = async () => {
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+  // Store code verifier in localStorage for later use
+  localStorage.setItem('code_verifier', codeVerifier);
+
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: '97462b80a7864533a23a82791a1f662f',
+    scope: 'playlist-read-private playlist-modify-public playlist-modify-private',
+    redirect_uri: 'https://spotify-concat-app.vercel.app/',
+    code_challenge_method: 'S256',
+    code_challenge: codeChallenge
+  });
+
+  window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+};
+
+
+async function getAccessToken() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+
+  if (!code) return;
+
+  const codeVerifier = localStorage.getItem('code_verifier');
+
+  const body = new URLSearchParams({
+    client_id: '97462b80a7864533a23a82791a1f662f',
+    grant_type: 'authorization_code',
+    code: code,
+    redirect_uri: 'https://spotify-concat-app.vercel.app/',
+    code_verifier: codeVerifier
+  });
+
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body
+  });
+
+  const data = await response.json();
+  let access_token = data.access_token;
+  if (!access_token) {
+    console.error('Failed to retrieve access token:', data);
+    return;
+  }
+  updateUIForAuth();
+  console.log('Access Token:', data.access_token);
+  // Store and use access_token for API calls
+}
+
+getAccessToken();
+
+
+window.onload = () => {
+  getAccessToken(); // maybe updates `accessToken`
+  updateUIForAuth(); // show/hide sections
 };
