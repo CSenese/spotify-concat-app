@@ -121,18 +121,32 @@ document.getElementById('mergePlaylists').addEventListener('click', () => {
 });
 
 function showUnselectedPlaylists() {
-  const container = document.getElementById('replaceablePlaylists');
-  container.innerHTML = ''; // Clear previous list
+  const container = document.getElementById('selectedPlaylists');
+  container.innerHTML = ''; // Clear previous buttons
 
   const unselected = allPlaylists.filter(p => !selectedPlaylists.has(p.id));
+  const playlistNameInput = document.getElementById('playlistName');
 
   unselected.forEach(playlist => {
-    const div = document.createElement('div');
-    div.textContent = playlist.name;
-    div.style.padding = '5px 0';
-    container.appendChild(div);
+    const btn = document.createElement('button');
+    btn.className = 'playlist-btn';
+    btn.textContent = playlist.name;
+
+    btn.addEventListener('click', () => {
+      // Set input value and disable it
+      playlistNameInput.value = playlist.name;
+      playlistNameInput.disabled = true;
+
+      // Highlight selected button visually
+      const allBtns = container.querySelectorAll('.playlist-btn');
+      allBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+
+    container.appendChild(btn);
   });
 }
+
 
 document.getElementById('includeTracks').addEventListener('change', (e) => {
   if (e.target.checked) {
@@ -140,5 +154,14 @@ document.getElementById('includeTracks').addEventListener('change', (e) => {
   } else {
     document.getElementById('replaceablePlaylists').innerHTML = '';
   }
+});
+
+
+document.getElementById('playlistName').addEventListener('focus', () => {
+  if (document.getElementById('playlistName').disabled) return;
+
+  // Optional: Clear selected highlight from unselected buttons
+  const buttons = document.querySelectorAll('#selectedPlaylists .playlist-btn');
+  buttons.forEach(btn => btn.classList.remove('selected'));
 });
 
