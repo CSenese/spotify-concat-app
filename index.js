@@ -33,7 +33,7 @@ document.getElementById('login').onclick = async () => {
   const codeChallenge = await generateCodeChallenge(codeVerifier);
 
   // Store code verifier in localStorage for later use
-  localStorage.setItem('code_verifier', codeVerifier);
+  sessionStorage.setItem('code_verifier', codeVerifier);
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -54,7 +54,7 @@ async function getAccessToken() {
 
   if (!code) return;
 
-  const codeVerifier = localStorage.getItem('code_verifier');
+  const codeVerifier = sessionStorage.getItem('code_verifier');
 
   if (!codeVerifier) {
     console.error('Code verifier not found in localStorage.');  
