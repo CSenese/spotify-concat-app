@@ -1,5 +1,7 @@
 const accessToken = sessionStorage.getItem('spotifyAccessToken'); // or manually paste one for testing
 
+console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
+
 if (!accessToken) {
     document.getElementById('playlist-container').innerText = 'No access token found.';
 } else {
