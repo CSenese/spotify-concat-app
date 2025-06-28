@@ -1,3 +1,19 @@
+import { generateCodeVerifier, generateCodeChallenge } from './functions/PKCE authenticator';
+
+function updateUIForAuth() {
+  const loginBtn = document.getElementById('login');
+  const loggedInSection = document.getElementById('loggedIn');
+
+  if (accessToken) {
+    loginBtn.style.display = 'none';
+    loggedInSection.style.display = 'block';
+  } else {
+    loginBtn.style.display = 'block';
+    loggedInSection.style.display = 'none';
+  }
+}
+
+
 document.getElementById('login').onclick = async () => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
