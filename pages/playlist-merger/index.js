@@ -1,5 +1,7 @@
 const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
 const selectedPlaylists = new Set();
+const allPlaylists = []; // stores all fetched playlists for later use
+
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
 
@@ -17,6 +19,7 @@ if (!accessToken) {
     container.innerHTML = '';
 
     data.items.forEach(playlist => {
+        allPlaylists.push(playlist); // Store the playlist for later use
         const btn = document.createElement('button');
         btn.className = 'playlist-btn';
         btn.innerText = playlist.name;
@@ -29,6 +32,11 @@ if (!accessToken) {
         } else {
             selectedPlaylists.add(playlist.id);
             addPlaylistBox(playlist);
+        }
+
+         // Refresh unselected list if checkbox is active
+        if (document.getElementById('includeTracks').checked) {
+            showUnselectedPlaylists();
         }
 
         console.log(Array.from(selectedPlaylists)); // Optional: for debugging
