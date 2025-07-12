@@ -46,7 +46,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 if (!accessToken) {
     document.getElementById('playlist-container').innerText = 'No access token found.';
 } else {
-    fetch('https://api.spotify.com/v1/me/playlists', {
+    fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
     headers: {
         Authorization: `Bearer ${accessToken}`
     }
@@ -323,16 +323,6 @@ document.getElementById('playlistName').addEventListener('focus', () => {
   const buttons = document.querySelectorAll('#selectedPlaylists .playlist-btn');
   buttons.forEach(btn => btn.classList.remove('selected'));
 });
-
-
-const fs = require('fs');
-const path = './created_playlists.json';
-
-// Load file or initialize
-let playlistData = {};
-if (fs.existsSync(path)) {
-  playlistData = JSON.parse(fs.readFileSync(path));
-}
 
 // Add new playlist
 /**

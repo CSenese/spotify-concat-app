@@ -39,7 +39,7 @@ document.getElementById('login').onclick = async () => {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: '97462b80a7864533a23a82791a1f662f',
-    scope: 'playlist-read-private playlist-modify-public playlist-modify-private',
+    scope: 'playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative',
     redirect_uri: 'https://spotify-concat-app.vercel.app/',
     code_challenge_method: 'S256',
     code_challenge: codeChallenge
