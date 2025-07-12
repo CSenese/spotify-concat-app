@@ -2,9 +2,36 @@ const accessToken = sessionStorage.getItem('access_token'); // or manually paste
 const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
 const finalPlaylist = []; // Stores all URIs to add to the merged playlist
+var userId; // Will be set after fetching current user ID
 
+async function getCurrentUserId() {
+    const res = await fetch('https://api.spotify.com/v1/me', {  
+        headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!res.ok) {
+        throw new Error('Failed to fetch current user ID');
+    }
+    const data = await res.json();  
+    return data.id; // Return the current user's ID
+}
+
+try {
+  userId = await getCurrentUserId();
+} catch (error) {
+    console.error('Error fetching current user ID:', error);
+    document.getElementById('playlist-container').innerText = 'Error fetching user ID. Please check your access token.';
+    return;
+}
+
+const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
+const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 if (!accessToken) {
     document.getElementById('playlist-container').innerText = 'No access token found.';
@@ -54,9 +81,9 @@ if (!accessToken) {
 
 
 document.getElementById('searchFriend').addEventListener('click', async () => {
-  const userId = document.getElementById('friendUserId').value.trim();
+  const friendUserId = document.getElementById('friendUserId').value.trim();
 
-  if (!userId) {
+  if (!friendUserId) {
     alert('Please enter a Spotify username');
     return;
   }
@@ -65,7 +92,7 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
   friendDiv.innerHTML = 'Loading...';
 
   try {
-    const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+    const res = await fetch(`https://api.spotify.com/v1/users/${friendUserId}/playlists`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
 
@@ -76,7 +103,7 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
       return;
     }
 
-    friendDiv.innerHTML = `<h3>${userId}'s Public Playlists</h3>`;
+    friendDiv.innerHTML = `<h3>${friendUserId}'s Public Playlists</h3>`;
 
     data.items.forEach(playlist => {
       const btn = document.createElement('button');
@@ -111,18 +138,7 @@ function removePlaylistBox(playlistId) {
   if (box) box.remove();
 }
 
-async function getCurrentUserId() {
-    const res = await fetch('https://api.spotify.com/v1/me', {  
-        headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!res.ok) {
-        throw new Error('Failed to fetch current user ID');
-    }
-    const data = await res.json();  
-    return data.id; // Return the current user's ID
-}
-
-async function createNewPlaylist(userId, name) {
+async function createNewPlaylist(name) {
     const res = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
         method: 'POST',
         headers: {
@@ -211,15 +227,14 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
   }
 
   document.getElementById('mergePlaylists').disabled = true;
-  try {
-    const userId = await getCurrentUserId();
 
-    // Step 1: Create new playlist
+  try {
+  
     const newPlaylistId = await createNewPlaylist(userId, playlistName);
     console.log(`Created new playlist: ${newPlaylistId}`);
 
     // Step 2: Gather all tracks
-    finalPlaylist.length = 0; // clear any previous data
+    finalPlaylist.length = 0;
 
     for (const playlistId of selectedPlaylists) {
       await addPlaylistTracksToFinal(playlistId);
@@ -230,17 +245,22 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
       return;
     }
 
-    // Step 3: Add all tracks to the new playlist (in chunks of 100)
+    // Step 3: Add tracks to new playlist
     await addTracksToPlaylist(newPlaylistId, finalPlaylist);
 
     alert(`Playlist "${playlistName}" created and populated successfully!`);
+
+    if (newPlaylistId) {
+      storePlaylist(Array.from(selectedPlaylists), newPlaylistId, userId);
+    }
   } catch (err) {
     console.error('Error merging playlists:', err);
     alert('Something went wrong while merging playlists.');
   } finally {
     document.getElementById('mergePlaylists').disabled = false;
-    }
+  }
 });
+
 
 
 function showUnselectedPlaylists() {
@@ -293,3 +313,115 @@ document.getElementById('playlistName').addEventListener('focus', () => {
   const buttons = document.querySelectorAll('#selectedPlaylists .playlist-btn');
   buttons.forEach(btn => btn.classList.remove('selected'));
 });
+
+
+const fs = require('fs');
+const path = './created_playlists.json';
+
+// Load file or initialize
+let playlistData = {};
+if (fs.existsSync(path)) {
+  playlistData = JSON.parse(fs.readFileSync(path));
+}
+
+// Add new playlist
+/**
+ * Stores a list of playlist IDs under a playlist ID.
+ * @param {string} playlistId - Spotify main playlist ID
+ * @param {string[]} playlistList - List of playlist IDs
+ */
+async function storePlaylist(playlistList, playlistId, userId) {
+  const { data, error: fetchError } = await supabase
+    .from('playlists')
+    .select('playlist_id')
+    .eq('playlist_id', playlistId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('Error checking existing playlist:', fetchError);
+    return;
+  }
+
+  const payload = {
+    user_id: userId,
+    playlist_id: playlistId,
+    playlists: playlistList,
+    last_modified: new Date().toISOString()
+  };
+
+  let result;
+  if (data) {
+    // Record exists, update it
+    result = await supabase
+      .from('playlists')
+      .update(payload)
+      .eq('playlist_id', playlistId)
+      .eq('user_id', userId);
+  } else {
+    // Insert new record
+    result = await supabase
+      .from('playlists')
+      .insert(payload);
+  }
+
+  const { error } = result;
+  if (error) {
+    console.error('Error saving playlist:', error);
+  } else {
+    console.log('Playlist saved successfully!');
+  }
+}
+
+
+async function renderSavedPlaylistButtons(accessToken) {
+  const container = document.getElementById('savedPlaylistButtons');
+  container.innerHTML = ''; // Clear previous content
+
+  // Step 1: Fetch saved playlists from Supabase
+  const { data: savedRows, error: supabaseError } = await supabase
+    .from('playlists')
+    .select('playlist_id, playlists')
+    .eq('user_id', userId);
+
+  if (supabaseError) {
+    console.error("Failed to fetch saved playlists:", supabaseError);
+    return;
+  }
+
+  const savedPlaylists = {};
+  for (const row of savedRows) {
+    savedPlaylists[row.playlist_id] = row.playlists;
+  }
+
+  // Step 2: Fetch user's playlists from Spotify
+  const userPlaylists = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  }).then(res => res.json());
+
+  if (!userPlaylists.items) {
+    console.error("Failed to load user playlists:", userPlaylists);
+    return;
+  }
+
+  // Step 3: Create buttons for matching playlists
+  userPlaylists.items.forEach(playlist => {
+    const playlistId = playlist.id;
+
+    if (savedPlaylists[playlistId]) {
+      const button = document.createElement('button');
+      button.textContent = `Load "${playlist.name}"`;
+      button.classList.add('saved-playlist-btn');
+      button.onclick = () => {
+        selectedPlaylists.clear();
+        savedPlaylists[playlistId].forEach(id => selectedPlaylists.add(id));
+        alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
+      };
+      container.appendChild(button);
+    }
+  });
+}
+
+renderSavedPlaylistButtons(accessToken);
