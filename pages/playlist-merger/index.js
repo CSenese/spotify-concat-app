@@ -2,26 +2,36 @@ const accessToken = sessionStorage.getItem('access_token'); // or manually paste
 const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
 const finalPlaylist = []; // Stores all URIs to add to the merged playlist
-var userId; // Will be set after fetching current user ID
+var userId = null; // Will be set after fetching current user ID
 
 async function getCurrentUserId() {
-    const res = await fetch('https://api.spotify.com/v1/me', {  
-        headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!res.ok) {
-        throw new Error('Failed to fetch current user ID');
-    }
-    const data = await res.json();  
-    return data.id; // Return the current user's ID
+  const res = await fetch('https://api.spotify.com/v1/me', {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch current user ID');
+  }
+  const data = await res.json();
+  return data.id;
 }
 
-try {
-  userId = await getCurrentUserId();
-} catch (error) {
-    console.error('Error fetching current user ID:', error);
-    document.getElementById('playlist-container').innerText = 'Error fetching user ID. Please check your access token.';
-    return;
+async function initializeUserId() {
+  try {
+    userId = await getCurrentUserId();
+    console.log('User ID:', userId);
+    // Continue to whatever needs userId here
+  } catch (error) {
+    console.error('Error fetching user ID:', error);
+    document.getElementById('playlist-container').innerText =
+      'Error fetching user ID. Please check your access token.';
+  }
 }
+
+// Call it after confirming accessToken is available
+if (accessToken) {
+  initializeUserId(); // ✅ fetch and assign userId
+}
+
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
 const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
