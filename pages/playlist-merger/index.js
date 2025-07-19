@@ -238,9 +238,20 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
   document.getElementById('mergePlaylists').disabled = true;
 
   try {
-  
-    const newPlaylistId = await createNewPlaylist(playlistName);
-    console.log(`Created new playlist: ${newPlaylistId}`);
+
+    let newPlaylistId = null;
+
+    if (document.includeTracks.checked) {
+      //get the selected playlist id from the allPlaylists array
+      const selectedPlaylist = allPlaylists.find(p => p.name === playlistName);
+      if (selectedPlaylist) {
+        newPlaylistId = selectedPlaylist.id;
+        console.log(`Using existing playlist: ${newPlaylistId}`);
+      }
+    } else {
+      newPlaylistId = await createNewPlaylist(playlistName);
+      console.log(`Created new playlist: ${newPlaylistId}`);
+    }
 
     // Step 2: Gather all tracks
     finalPlaylist.length = 0;
