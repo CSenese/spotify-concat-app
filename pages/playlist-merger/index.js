@@ -86,8 +86,8 @@ async function renderSavedPlaylistButtons(accessToken) {
 
 // Call it after confirming accessToken is available
 if (accessToken) {
-  initializeUserId().then((resolvedUserId) => {
-    if (resolvedUserId) {
+  initializeUserId().then(() => {
+    if (userId) {
       renderSavedPlaylistButtons(accessToken);
     }
   });
