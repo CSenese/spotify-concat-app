@@ -333,7 +333,7 @@ async function storePlaylist(playlistList, playlistId, userId) {
     .select('playlist_id')
     .eq('playlist_id', playlistId)
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (fetchError && fetchError.code !== 'PGRST116') {
     console.error('Error checking existing playlist:', fetchError);
