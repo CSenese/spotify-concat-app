@@ -241,7 +241,7 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
 
     let newPlaylistId = null;
 
-    if (document.includeTracks.checked) {
+    if (document.getElementById('includeTracks').checked) {
       //get the selected playlist id from the allPlaylists array
       const selectedPlaylist = allPlaylists.find(p => p.name === playlistName);
       if (selectedPlaylist) {
