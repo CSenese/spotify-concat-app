@@ -34,14 +34,13 @@ if (accessToken) {
 
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
-const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
+const SUPABASE_ANON_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 
 if (!accessToken) {
     document.getElementById('playlist-container').innerText = 'No access token found.';
@@ -260,12 +259,10 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
 
     alert(`Playlist "${playlistName}" created and populated successfully!`);
 
-    if (newPlaylistId) {
-      storePlaylist(Array.from(selectedPlaylists), newPlaylistId, userId);
-    }
+    storePlaylist(Array.from(selectedPlaylists), newPlaylistId, userId);
   } catch (err) {
     console.error('Error merging playlists:', err);
-    alert('Something went wrong while merging playlists.');
+    alert('Something went wrong while merging or saving playlists.');
   } finally {
     document.getElementById('mergePlaylists').disabled = false;
   }
