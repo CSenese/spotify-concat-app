@@ -397,6 +397,8 @@ async function renderSavedPlaylistButtons(accessToken) {
     return;
   }
 
+  console.log("Fetched saved playlists:", savedRows);
+
   const savedPlaylists = {};
   for (const row of savedRows) {
     savedPlaylists[row.playlist_id] = row.playlists;
@@ -414,11 +416,14 @@ async function renderSavedPlaylistButtons(accessToken) {
     return;
   }
 
+  console.log("Fetched user playlists:", userPlaylists.items);
+
   // Step 3: Create buttons for matching playlists
   userPlaylists.items.forEach(playlist => {
     const playlistId = playlist.id;
 
     if (savedPlaylists[playlistId]) {
+      console.log(`Found saved playlist: ${playlist.name} (${playlistId})`);
       const button = document.createElement('button');
       button.textContent = `Load "${playlist.name}"`;
       button.classList.add('saved-playlist-btn');
