@@ -76,7 +76,19 @@ async function renderSavedPlaylistButtons(accessToken) {
       button.classList.add('saved-playlist-btn');
       button.onclick = () => {
         selectedPlaylists.clear();
-        savedPlaylists[playlistId].forEach(id => selectedPlaylists.add(id));
+        document.getElementById('playlistName').value = playlist.name;
+        document.getElementById('playlistName').disabled = true; // Disable input
+        document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
+        const row = document.getElementById('includeTracks') = checked;
+        savedPlaylists[playlistId].forEach(id => {
+          selectedPlaylists.add(id);
+          //enable the playlist-container buttons for the matching playlists id
+          const btn = document.querySelector(`.playlist-btn[data-playlist-id="${id}"]`);
+          if (btn) {
+            btn.classList.add('selected');
+            addPlaylistBox({ id, name: playlist.name });
+          }
+        });
         alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
       };
       container.appendChild(button);
@@ -121,6 +133,7 @@ if (!accessToken) {
         const btn = document.createElement('button');
         btn.className = 'playlist-btn';
         btn.innerText = playlist.name;
+        btn.dataset.playlistId = playlist.id; // Store the ID for later reference
 
         btn.addEventListener('click', () => {
         btn.classList.toggle('selected');
