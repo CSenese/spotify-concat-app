@@ -27,9 +27,70 @@ async function initializeUserId() {
   }
 }
 
+async function renderSavedPlaylistButtons(accessToken) {
+  const container = document.getElementById('savedPlaylistButtons');
+  container.innerHTML = ''; // Clear previous content
+
+  console.log("Rendering saved playlist buttons...", userId);
+
+  // Step 1: Fetch saved playlists from Supabase
+  const { data: savedRows, error: supabaseError } = await supabase
+    .from('playlists')
+    .select('playlist_id, playlists')
+    .eq('user_id', userId);
+
+  if (supabaseError) {
+    console.error("Failed to fetch saved playlists:", supabaseError);
+    return;
+  }
+
+  console.log("Fetched saved playlists:", savedRows);
+
+  const savedPlaylists = {};
+  for (const row of savedRows) {
+    savedPlaylists[row.playlist_id] = row.playlists;
+  }
+
+  // Step 2: Fetch user's playlists from Spotify
+  const userPlaylists = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  }).then(res => res.json());
+
+  if (!userPlaylists.items) {
+    console.error("Failed to load user playlists:", userPlaylists);
+    return;
+  }
+
+  console.log("Fetched user playlists:", userPlaylists.items);
+
+  // Step 3: Create buttons for matching playlists
+  userPlaylists.items.forEach(playlist => {
+    const playlistId = playlist.id;
+
+    if (savedPlaylists[playlistId]) {
+      console.log(`Found saved playlist: ${playlist.name} (${playlistId})`);
+      const button = document.createElement('button');
+      button.textContent = `Load "${playlist.name}"`;
+      button.classList.add('saved-playlist-btn');
+      button.onclick = () => {
+        selectedPlaylists.clear();
+        savedPlaylists[playlistId].forEach(id => selectedPlaylists.add(id));
+        alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
+      };
+      container.appendChild(button);
+    }
+  });
+}
+
 // Call it after confirming accessToken is available
 if (accessToken) {
-  initializeUserId(); // ✅ fetch and assign userId
+  initializeUserId().then((resolvedUserId) => {
+    if (resolvedUserId) {
+      renderSavedPlaylistButtons(accessToken);
+    }
+  });
 }
 
 
@@ -380,63 +441,3 @@ async function storePlaylist(playlistList, playlistId) {
     console.log('Playlist saved successfully!');
   }
 }
-
-
-async function renderSavedPlaylistButtons(accessToken) {
-  const container = document.getElementById('savedPlaylistButtons');
-  container.innerHTML = ''; // Clear previous content
-
-  console.log("Rendering saved playlist buttons...", userId);
-
-  // Step 1: Fetch saved playlists from Supabase
-  const { data: savedRows, error: supabaseError } = await supabase
-    .from('playlists')
-    .select('playlist_id, playlists')
-    .eq('user_id', userId);
-
-  if (supabaseError) {
-    console.error("Failed to fetch saved playlists:", supabaseError);
-    return;
-  }
-
-  console.log("Fetched saved playlists:", savedRows);
-
-  const savedPlaylists = {};
-  for (const row of savedRows) {
-    savedPlaylists[row.playlist_id] = row.playlists;
-  }
-
-  // Step 2: Fetch user's playlists from Spotify
-  const userPlaylists = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  }).then(res => res.json());
-
-  if (!userPlaylists.items) {
-    console.error("Failed to load user playlists:", userPlaylists);
-    return;
-  }
-
-  console.log("Fetched user playlists:", userPlaylists.items);
-
-  // Step 3: Create buttons for matching playlists
-  userPlaylists.items.forEach(playlist => {
-    const playlistId = playlist.id;
-
-    if (savedPlaylists[playlistId]) {
-      console.log(`Found saved playlist: ${playlist.name} (${playlistId})`);
-      const button = document.createElement('button');
-      button.textContent = `Load "${playlist.name}"`;
-      button.classList.add('saved-playlist-btn');
-      button.onclick = () => {
-        selectedPlaylists.clear();
-        savedPlaylists[playlistId].forEach(id => selectedPlaylists.add(id));
-        alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
-      };
-      container.appendChild(button);
-    }
-  });
-}
-
-renderSavedPlaylistButtons(accessToken);
