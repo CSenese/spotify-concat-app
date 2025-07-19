@@ -270,7 +270,7 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
 
     alert(`Playlist "${playlistName}" created and populated successfully!`);
 
-    storePlaylist(Array.from(selectedPlaylists), newPlaylistId, userId);
+    storePlaylist(Array.from(selectedPlaylists), newPlaylistId);
   } catch (err) {
     console.error('Error merging playlists:', err);
     alert('Something went wrong while merging or saving playlists.');
@@ -338,7 +338,7 @@ document.getElementById('playlistName').addEventListener('focus', () => {
  * @param {string} playlistId - Spotify main playlist ID
  * @param {string[]} playlistList - List of playlist IDs
  */
-async function storePlaylist(playlistList, playlistId, userId) {
+async function storePlaylist(playlistList, playlistId) {
   const { data, error: fetchError } = await supabase
     .from('playlists')
     .select('playlist_id')
@@ -385,6 +385,8 @@ async function storePlaylist(playlistList, playlistId, userId) {
 async function renderSavedPlaylistButtons(accessToken) {
   const container = document.getElementById('savedPlaylistButtons');
   container.innerHTML = ''; // Clear previous content
+
+  console.log("Rendering saved playlist buttons...", userId);
 
   // Step 1: Fetch saved playlists from Supabase
   const { data: savedRows, error: supabaseError } = await supabase
