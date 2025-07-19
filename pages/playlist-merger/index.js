@@ -34,7 +34,7 @@ if (accessToken) {
 
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
-const SUPABASE_ANON_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
+const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
 
 console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
 
@@ -239,7 +239,7 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
 
   try {
   
-    const newPlaylistId = await createNewPlaylist(userId, playlistName);
+    const newPlaylistId = await createNewPlaylist(playlistName);
     console.log(`Created new playlist: ${newPlaylistId}`);
 
     // Step 2: Gather all tracks
