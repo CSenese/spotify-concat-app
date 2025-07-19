@@ -79,7 +79,7 @@ async function renderSavedPlaylistButtons(accessToken) {
         document.getElementById('playlistName').value = playlist.name;
         document.getElementById('playlistName').disabled = true; // Disable input
         document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
-        const row = document.getElementById('includeTracks') = checked;
+        document.getElementById('includeTracks').checked = true;
         savedPlaylists[playlistId].forEach(id => {
           selectedPlaylists.add(id);
           //enable the playlist-container buttons for the matching playlists id
