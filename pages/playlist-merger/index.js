@@ -50,23 +50,12 @@ async function renderSavedPlaylistButtons(accessToken) {
   for (const row of savedRows) {
     savedPlaylists[row.playlist_id] = row.playlists;
   }
-
-  // Step 2: Fetch user's playlists from Spotify
-  const userPlaylists = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  }).then(res => res.json());
-
-  if (!userPlaylists.items) {
-    console.error("Failed to load user playlists:", userPlaylists);
-    return;
-  }
-
-  console.log("Fetched user playlists:", userPlaylists.items);
+  
+  console.log("Processed saved playlists:", savedPlaylists);
+  console.log("Fetched user playlists:", allPlaylists);
 
   // Step 3: Create buttons for matching playlists
-  userPlaylists.items.forEach(playlist => {
+  allPlaylists.forEach(playlist => {
     const playlistId = playlist.id;
 
     if (savedPlaylists[playlistId]) {
