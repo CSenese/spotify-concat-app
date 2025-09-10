@@ -174,6 +174,11 @@ async function renderSavedPlaylistButtons() {
         document.getElementById('includeTracks').checked = false;
         document.getElementById('playlistName').disabled = false; // Disable input
         alert(`un-Loaded ${playlistIds.length} playlists from "${mainPlaylistName}"`);
+        playlistIds.forEach(id => {
+          const playlist = allPlaylists.find(p => p.id === id);
+          const btn2 = document.querySelector(`.playlist-btn[data-playlist-id="${playlist.id}"]`);
+          btn2.classList.replace('selected','playlist-btn');
+        });
       }
     }
     container.appendChild(btn);
