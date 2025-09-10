@@ -178,7 +178,7 @@ async function renderSavedPlaylistButtons() {
           const playlist = allPlaylists.find(p => p.id === id);
           const btn2 = document.querySelector(`.playlist-btn[data-playlist-id="${playlist.id}"]`);
           btn2.classList.replace('selected','playlist-btn');
-          document.getElementById('playlistName').textContent = '';
+          document.getElementById('playlistName').value = '';
           isPlaylistSelected = false;
         });
       }
