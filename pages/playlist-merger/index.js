@@ -3,6 +3,7 @@ const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
 const finalPlaylist = []; // Stores all URIs to add to the merged playlist
 const savedPlaylists = {};
+const isPlaylistSelected = false;
 var userId = null; // Will be set after fetching current user ID
 
 import { getCurrentUserId } from '../../functions/api-calls.js';
@@ -151,21 +152,27 @@ async function renderSavedPlaylistButtons() {
     const btn = document.createElement('button');
     btn.className = 'saved-playlist-btn';
     btn.textContent = 'Load ' + mainPlaylistName;
+
     btn.onclick = () => {
       selectedPlaylists.clear();
       document.getElementById('playlistName').value = mainPlaylistName;
-      document.getElementById('playlistName').disabled = true; // Disable input
       document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
       document.getElementById('selectedPlaylistsRow').innerHTML = ''; // Clear selected display
-      document.getElementById('includeTracks').checked = true;
-      playlistIds.forEach(id => {
-        selectedPlaylists.add(id);
-        const playlist = allPlaylists.find(p => p.id === id);
-        const btn2 = document.querySelector(`.playlist-btn[data-playlist-id="${playlist.id}"]`);
-        btn2.classList.add('selected');
-        addPlaylistBox({ id: playlist.id, name: playlist.name });
-      });
-      alert(`Loaded ${playlistIds.length} playlists from "${mainPlaylistName}"`);
+      if (!isPlaylistSelected) {
+        document.getElementById('includeTracks').checked = true;
+        document.getElementById('playlistName').disabled = true; // Disable input
+        playlistIds.forEach(id => {
+          selectedPlaylists.add(id);
+          const playlist = allPlaylists.find(p => p.id === id);
+          const btn2 = document.querySelector(`.playlist-btn[data-playlist-id="${playlist.id}"]`);
+          btn2.classList.add('selected');
+          addPlaylistBox({ id: playlist.id, name: playlist.name });
+        });
+        alert(`Loaded ${playlistIds.length} playlists from "${mainPlaylistName}"`);
+      } else {
+        document.getElementById('includeTracks').checked = false;
+        document.getElementById('playlistName').disabled = false; // Disable input
+      }
     }
     container.appendChild(btn);
   }
