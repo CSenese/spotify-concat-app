@@ -2,22 +2,21 @@ const accessToken = sessionStorage.getItem('access_token'); // or manually paste
 const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
 const finalPlaylist = []; // Stores all URIs to add to the merged playlist
+const savedPlaylists = {};
 var userId = null; // Will be set after fetching current user ID
 
-async function getCurrentUserId() {
-  const res = await fetch('https://api.spotify.com/v1/me', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-  if (!res.ok) {
-    throw new Error('Failed to fetch current user ID');
-  }
-  const data = await res.json();
-  return data.id;
-}
+import { getCurrentUserId } from '../../functions/api-calls.js';
 
-async function initializeUserId() {
+const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
+const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function initializeUserId(accessToken) {
   try {
-    userId = await getCurrentUserId();
+    userId = await getCurrentUserId(accessToken);
     console.log('User ID:', userId);
     // Continue to whatever needs userId here
   } catch (error) {
@@ -26,83 +25,6 @@ async function initializeUserId() {
       'Error fetching user ID. Please check your access token.';
   }
 }
-
-async function renderSavedPlaylistButtons(accessToken) {
-  const container = document.getElementById('savedPlaylistButtons');
-  container.innerHTML = ''; // Clear previous content
-
-  console.log("Rendering saved playlist buttons...", userId);
-
-  // Step 1: Fetch saved playlists from Supabase
-  const { data: savedRows, error: supabaseError } = await supabase
-    .from('playlists')
-    .select('playlist_id, playlists')
-    .eq('user_id', userId);
-
-  if (supabaseError) {
-    console.error("Failed to fetch saved playlists:", supabaseError);
-    return;
-  }
-
-  console.log("Fetched saved playlists:", savedRows);
-
-  const savedPlaylists = {};
-  for (const row of savedRows) {
-    savedPlaylists[row.playlist_id] = row.playlists;
-  }
-  
-  console.log("Processed saved playlists:", savedPlaylists);
-  console.log("Fetched user playlists:", allPlaylists);
-
-  // Step 3: Create buttons for matching playlists
-  allPlaylists.forEach(playlist => {
-    const playlistId = playlist.id;
-
-    if (savedPlaylists[playlistId]) {
-      console.log(`Found saved playlist: ${playlist.name} (${playlistId})`);
-      const button = document.createElement('button');
-      button.textContent = `Load "${playlist.name}"`;
-      button.classList.add('saved-playlist-btn');
-      button.onclick = () => {
-        selectedPlaylists.clear();
-        document.getElementById('playlistName').value = playlist.name;
-        document.getElementById('playlistName').disabled = true; // Disable input
-        document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
-        document.getElementById('includeTracks').checked = true;
-        savedPlaylists[playlistId].forEach(id => {
-          selectedPlaylists.add(id);
-          //enable the playlist-container buttons for the matching playlists id
-          const btn = document.querySelector(`.playlist-btn[data-playlist-id="${id}"]`);
-          if (btn) {
-            btn.classList.add('selected');
-            addPlaylistBox({ id, name: playlist.name });
-          }
-        });
-        alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
-      };
-      container.appendChild(button);
-    }
-  });
-}
-
-// Call it after confirming accessToken is available
-if (accessToken) {
-  initializeUserId().then(() => {
-    if (userId) {
-      renderSavedPlaylistButtons(accessToken);
-    }
-  });
-}
-
-
-const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
-const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
-
-console.log('Access Token:', accessToken); // Debugging line to check if the token is retrieved
-
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 if (!accessToken) {
     document.getElementById('playlist-container').innerText = 'No access token found.';
@@ -194,6 +116,68 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
   }
 });
 
+
+async function renderSavedPlaylistButtons() {
+  const container = document.getElementById('savedPlaylistButtons');
+  container.innerHTML = ''; // Clear previous content
+
+  console.log("Rendering saved playlist buttons...", userId);
+
+  // Step 1: Fetch saved playlists from Supabase
+  const { data: savedRows, error: supabaseError } = await supabase
+    .from('playlists')
+    .select('playlist_id, playlists')
+    .eq('user_id', userId);
+
+  if (supabaseError) {
+    console.error("Failed to fetch saved playlists:", supabaseError);
+    return;
+  }
+
+  console.log("Fetched saved playlists:", savedRows);
+
+  for (const row of savedRows) {
+    savedPlaylists[row.playlist_id] = row.playlists;
+  }
+  
+  console.log("Processed saved playlists:", savedPlaylists);
+  console.log("Fetched user playlists:", allPlaylists);
+
+  for (const [mainPlaylistId, playlistIds] of Object.entries(savedPlaylists)) {
+    console.log("Creating button for main playlist ID:", mainPlaylistId, "with playlists:", playlistIds);
+    const mainPlaylist = allPlaylists.find(p => p.id === mainPlaylistId);
+    const mainPlaylistName = mainPlaylist ? mainPlaylist.name : `Playlist ID: ${mainPlaylistId}`;
+
+    const btn = document.createElement('button');
+    btn.className = 'saved-playlist-btn';
+    btn.textContent = 'Load ' + mainPlaylistName;
+    btn.onclick = () => {
+      selectedPlaylists.clear();
+      document.getElementById('playlistName').value = playlist.name;
+      document.getElementById('playlistName').disabled = true; // Disable input
+      document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
+      document.getElementById('includeTracks').checked = true;
+      playlistIds.forEach(id => {
+        selectedPlaylists.add(id);
+        const playlist = allPlaylists.find(p => p.id === id);
+        const btn2 = document.querySelector(`.playlist-btn[data-playlist-id="${playlist.id}"]`);
+        btn2.classList.add('selected');
+        addPlaylistBox({ id: playlist.id, name: playlist.name });
+      });
+      alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
+    }
+    container.appendChild(btn);
+  }
+}
+
+// Call it after confirming accessToken is available
+if (accessToken) {
+  initializeUserId(accessToken).then(() => {
+    if (userId) {
+      renderSavedPlaylistButtons();
+    }
+  });
+}
 
 const row = document.getElementById('selectedPlaylistsRow');
 
