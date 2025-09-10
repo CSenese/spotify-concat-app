@@ -156,6 +156,7 @@ async function renderSavedPlaylistButtons() {
       document.getElementById('playlistName').value = mainPlaylistName;
       document.getElementById('playlistName').disabled = true; // Disable input
       document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
+      document.getEllementById('selectedPlaylistsRow').innerHTML = ''; // Clear selected display
       document.getElementById('includeTracks').checked = true;
       playlistIds.forEach(id => {
         selectedPlaylists.add(id);
