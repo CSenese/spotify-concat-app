@@ -3,7 +3,7 @@ const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
 const finalPlaylist = []; // Stores all URIs to add to the merged playlist
 const savedPlaylists = {};
-const isPlaylistSelected = false;
+let isPlaylistSelected = false;
 var userId = null; // Will be set after fetching current user ID
 
 import { getCurrentUserId } from '../../functions/api-calls.js';
