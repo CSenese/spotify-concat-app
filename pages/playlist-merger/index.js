@@ -164,7 +164,7 @@ async function renderSavedPlaylistButtons() {
         btn2.classList.add('selected');
         addPlaylistBox({ id: playlist.id, name: playlist.name });
       });
-      alert(`Loaded ${savedPlaylists[playlistId].length} playlists from "${playlist.name}"`);
+      alert(`Loaded ${playlistIds.length} playlists from "${mainPlaylistName}"`);
     }
     container.appendChild(btn);
   }
