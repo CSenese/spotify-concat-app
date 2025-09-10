@@ -153,7 +153,7 @@ async function renderSavedPlaylistButtons() {
     btn.textContent = 'Load ' + mainPlaylistName;
     btn.onclick = () => {
       selectedPlaylists.clear();
-      document.getElementById('playlistName').value = playlist.name;
+      document.getElementById('playlistName').value = mainPlaylistName;
       document.getElementById('playlistName').disabled = true; // Disable input
       document.getElementById('replaceablePlaylists').innerHTML = ''; // Clear unselected playlists
       document.getElementById('includeTracks').checked = true;
