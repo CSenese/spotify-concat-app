@@ -11,7 +11,7 @@ import { getCurrentUserId } from '../functions/api-calls.js';
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
 const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
 
-import SupabaseClient from '../../api/supabase-client.js';
+import SupabaseClient from '../classes/SupabaseClient.js';
 
 // Initialize Supabase client asynchronously so we can surface import errors.
 let supabaseClient;
