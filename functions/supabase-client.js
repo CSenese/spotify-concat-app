@@ -1,3 +1,5 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 /**
  * Small wrapper around the Supabase client to centralize calls.
  * Uses dynamic import to allow clearer errors on import failure and to pin the version.
