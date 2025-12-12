@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Spotify Playlist Combiner</title>
+  <script type="module" crossorigin src="/assets/index-B20raIu2.js"></script>
+</head>
+<body>
+  <h1>Spotify Playlist Combiner</h1>
+  <button id="login">Log in with Spotify</button>
+
+  <div id="loggedIn" style="display: none;">
+    <h2>Welcome! You're authenticated.</h2>
+    <button id="mergePlaylists">Merge My Playlists</button>
+
+    <script>
+      document.getElementById('mergePlaylists').addEventListener('click', () => {
+        // Navigate to playlist page
+        window.location.href = './pages/playlist-merger/index.html';
+      });
+    </script>
+  </div>
+
+
+</body>
+</html>

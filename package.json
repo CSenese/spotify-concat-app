@@ -1,13 +1,27 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.87.1"
-  },
-  "devDependencies": {
+    "@supabase/supabase-js": "^2.87.1",
     "vite": "^7.2.7"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
-  }
+  },
+  "name": "spotify-concat-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CSenese/spotify-concat-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CSenese/spotify-concat-app/issues"
+  },
+  "homepage": "https://github.com/CSenese/spotify-concat-app#readme"
 }
