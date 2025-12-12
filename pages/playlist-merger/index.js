@@ -13,7 +13,13 @@ const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p
 
 import SupabaseClient from '../../functions/supabase-client.js';
 
-const supabaseClient = new SupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let supabaseClient;
+try {
+  console.log('Initializing Supabase client', { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.slice(0, 8)}...` : undefined });
+  supabaseClient = new SupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+} catch (err) {
+  console.error('Failed to initialize SupabaseClient', err);
+}
 
 async function initializeUserId(accessToken) {
   try {
@@ -126,6 +132,10 @@ async function renderSavedPlaylistButtons() {
 
   // Step 1: Fetch saved playlists from Supabase
   let savedRows = [];
+  if (!supabaseClient) {
+    console.error('SupabaseClient not initialized; cannot fetch saved playlists.');
+    return;
+  }
   try {
     savedRows = await supabaseClient.fetchSavedPlaylists(userId);
   } catch (err) {
@@ -401,6 +411,10 @@ document.getElementById('playlistName').addEventListener('focus', () => {
  * @param {string[]} playlistList - List of playlist IDs
  */
 async function storePlaylist(playlistList, playlistId) {
+  if (!supabaseClient) {
+    console.error('SupabaseClient not initialized; cannot store playlist.');
+    return;
+  }
   try {
     await supabaseClient.storePlaylist(playlistList, playlistId, userId);
     console.log('Playlist saved successfully!');

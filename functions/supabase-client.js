@@ -9,7 +9,20 @@ export default class SupabaseClient {
    * @param {string} publishableKey
    */
   constructor(url, publishableKey) {
-    this.client = createClient(url, publishableKey);
+    if (!url || !publishableKey) {
+      console.error('Supabase URL or publishable key missing.', { url, publishableKey });
+      throw new Error('Supabase URL and publishable key are required to initialize SupabaseClient.');
+    }
+    try {
+      this.client = createClient(url, publishableKey);
+      if (!this.client) {
+        console.error('createClient returned falsy client', { url, publishableKey });
+        throw new Error('Supabase createClient returned a falsy value');
+      }
+    } catch (err) {
+      console.error('Failed to create Supabase client. Did you import the ESM build in a browser environment?', err);
+      throw err;
+    }
   }
 
   /**
