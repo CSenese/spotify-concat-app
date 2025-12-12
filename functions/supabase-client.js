@@ -14,16 +14,7 @@ export default class SupabaseClient {
       throw new Error('Supabase URL and publishable key are required to initialize SupabaseClient.');
     }
 
-    // pin the version so the import doesn't unexpectedly change
-    const VERSION = '2.87.1';
-    const CDN = `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@${VERSION}/+esm`;
     try {
-      const mod = await import(CDN);
-      const createClient = mod.createClient || (mod.default && mod.default.createClient);
-      if (!createClient) {
-        console.error('Supabase createClient not found in the imported module', { CDN, mod });
-        throw new Error('Supabase createClient not found');
-      }
       const instance = new SupabaseClient();
       instance.client = createClient(url, publishableKey);
       if (!instance.client) {
