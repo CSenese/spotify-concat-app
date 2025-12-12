@@ -3,7 +3,9 @@
  * This file contains no backend-only imports so it can be used in src/ (browser).
  */
 
-import { init as initServerClient } from '../../api/supabase-client.js';
+// import { init as initServerClient } from '../../api/supabase-client.js';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 
 export default class SupabaseClient {
   constructor(client = null) {
@@ -17,12 +19,13 @@ export default class SupabaseClient {
     }
 
     try {
-      const instance = await initServerClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-      if (!instance.client) {
+    //   const instance = await initServerClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+      const client = createClient(url, publishableKey);
+      if (!client) {
         console.error('createClient returned falsy client', { url, publishableKey });
         throw new Error('Supabase createClient returned a falsy value');
       }
-      return instance;
+      return client;
     } catch (err) {
       console.error('Failed to dynamically import @supabase/supabase-js', err);
       throw err;
