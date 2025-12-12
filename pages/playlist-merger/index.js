@@ -13,10 +13,12 @@ const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p
 
 import SupabaseClient from '../../functions/supabase-client.js';
 
+// Initialize Supabase client asynchronously so we can surface import errors.
 let supabaseClient;
 try {
   console.log('Initializing Supabase client', { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.slice(0, 8)}...` : undefined });
-  supabaseClient = new SupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  supabaseClient = await SupabaseClient.init(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  console.log('Supabase client initialized', !!supabaseClient?.client);
 } catch (err) {
   console.error('Failed to initialize SupabaseClient', err);
 }

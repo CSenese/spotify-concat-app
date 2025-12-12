@@ -1,26 +1,38 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
 /**
  * Small wrapper around the Supabase client to centralize calls.
+ * Uses dynamic import to allow clearer errors on import failure and to pin the version.
  */
 export default class SupabaseClient {
   /**
+   * Asynchronously initialize a SupabaseClient instance.
    * @param {string} url
    * @param {string} publishableKey
    */
-  constructor(url, publishableKey) {
+  static async init(url, publishableKey) {
     if (!url || !publishableKey) {
       console.error('Supabase URL or publishable key missing.', { url, publishableKey });
       throw new Error('Supabase URL and publishable key are required to initialize SupabaseClient.');
     }
+
+    // pin the version so the import doesn't unexpectedly change
+    const VERSION = '2.87.1';
+    const CDN = `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@${VERSION}/+esm`;
     try {
-      this.client = createClient(url, publishableKey);
-      if (!this.client) {
+      const mod = await import(CDN);
+      const createClient = mod.createClient || (mod.default && mod.default.createClient);
+      if (!createClient) {
+        console.error('Supabase createClient not found in the imported module', { CDN, mod });
+        throw new Error('Supabase createClient not found');
+      }
+      const instance = new SupabaseClient();
+      instance.client = createClient(url, publishableKey);
+      if (!instance.client) {
         console.error('createClient returned falsy client', { url, publishableKey });
         throw new Error('Supabase createClient returned a falsy value');
       }
+      return instance;
     } catch (err) {
-      console.error('Failed to create Supabase client. Did you import the ESM build in a browser environment?', err);
+      console.error('Failed to dynamically import @supabase/supabase-js from CDN', { url, publishableKey }, err);
       throw err;
     }
   }
