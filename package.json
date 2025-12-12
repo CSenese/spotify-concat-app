@@ -4,7 +4,7 @@
   },
   "scripts": {
     "dev": "echo \"No dev server; open src/index.html\"",
-    "build": "echo \"No build step; static site ready\"",
+    "build": "node scripts/copy-src-to-public.js",
     "preview": "echo \"No preview step\""
   },
   "name": "spotify-concat-app",
