@@ -9,11 +9,11 @@ var userId = null; // Will be set after fetching current user ID
 import { getCurrentUserId } from '../../functions/api-calls.js';
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
-const SUPABASE_ANON_KEY = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rZGN5enVqcHdpc2NpcGduenhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzQxNjUsImV4cCI6MjA2NzA1MDE2NX0.yOLXo2imObFyDZlYjhdF55xiINKpYR9QwjsT1mgbPx4`;
+const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import SupabaseClient from '../../functions/supabase-client.js';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = new SupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 async function initializeUserId(accessToken) {
   try {
@@ -125,13 +125,11 @@ async function renderSavedPlaylistButtons() {
   console.log("Rendering saved playlist buttons...", userId);
 
   // Step 1: Fetch saved playlists from Supabase
-  const { data: savedRows, error: supabaseError } = await supabase
-    .from('playlists')
-    .select('playlist_id, playlists')
-    .eq('user_id', userId);
-
-  if (supabaseError) {
-    console.error("Failed to fetch saved playlists:", supabaseError);
+  let savedRows = [];
+  try {
+    savedRows = await supabaseClient.fetchSavedPlaylists(userId);
+  } catch (err) {
+    console.error('Failed to fetch saved playlists:', err);
     return;
   }
 
@@ -403,44 +401,10 @@ document.getElementById('playlistName').addEventListener('focus', () => {
  * @param {string[]} playlistList - List of playlist IDs
  */
 async function storePlaylist(playlistList, playlistId) {
-  const { data, error: fetchError } = await supabase
-    .from('playlists')
-    .select('playlist_id')
-    .eq('playlist_id', playlistId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    console.error('Error checking existing playlist:', fetchError);
-    return;
-  }
-
-  const payload = {
-    user_id: userId,
-    playlist_id: playlistId,
-    playlists: playlistList,
-    last_modified: new Date().toISOString()
-  };
-
-  let result;
-  if (data) {
-    // Record exists, update it
-    result = await supabase
-      .from('playlists')
-      .update(payload)
-      .eq('playlist_id', playlistId)
-      .eq('user_id', userId);
-  } else {
-    // Insert new record
-    result = await supabase
-      .from('playlists')
-      .insert(payload);
-  }
-
-  const { error } = result;
-  if (error) {
-    console.error('Error saving playlist:', error);
-  } else {
+  try {
+    await supabaseClient.storePlaylist(playlistList, playlistId, userId);
     console.log('Playlist saved successfully!');
+  } catch (err) {
+    console.error('Error saving playlist:', err);
   }
 }
