@@ -6,12 +6,12 @@ const savedPlaylists = {};
 let isPlaylistSelected = false;
 var userId = null; // Will be set after fetching current user ID
 
-import { getCurrentUserId } from '../../functions/api-calls.js';
+import { getCurrentUserId } from '../../src/functions/api-calls.js';
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
 const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
 
-import SupabaseClient from '../../functions/supabase-client.js';
+import SupabaseClient from '../../src/functions/supabase-client.js';
 
 // Initialize Supabase client asynchronously so we can surface import errors.
 let supabaseClient;
