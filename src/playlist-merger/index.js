@@ -17,7 +17,7 @@ import SupabaseClient from '../classes/SupabaseClient.js';
 let supabaseClient;
 try {
   console.log('Initializing Supabase client', { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.slice(0, 8)}...` : undefined });
-  supabaseClient = await SupabaseClient.init(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  supabaseClient = new SupabaseClient(await SupabaseClient.init(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY));
   console.log('Supabase client initialized', !!supabaseClient?.client);
 } catch (err) {
   console.error('Failed to initialize SupabaseClient', err);
