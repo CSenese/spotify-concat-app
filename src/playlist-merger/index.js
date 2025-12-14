@@ -1,4 +1,4 @@
-import User from "../classes/User";
+import User from "../classes/User.js";
 
 const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
 const selectedPlaylists = new Set();
