@@ -31,7 +31,7 @@ class User {
     /**
      * loads the user's playlists from spotify and return the list so that the front * end can render them
      * @async
-     * @returns Promise<Playlist[]>
+     * @returns nothing because we are allowing direct access to userPlaylists through the class property
      */
     async loadUserPlaylists() {
         // Implementation to load user playlists from Spotify
@@ -49,7 +49,14 @@ class User {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             });
             console.log(data);
-            return data.items; // Assuming data.items contains the list of playlists
+            for (let item of data.items) {
+                this.userPlaylists.push({
+                    id: item.id,
+                    name: item.name,
+                    uri: item.uri,
+                    tracks: item.tracks.total
+                });
+            }
         }
     }
 
