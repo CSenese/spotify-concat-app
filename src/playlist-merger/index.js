@@ -13,6 +13,8 @@ const playlist = await user.loadUserPlaylists();
 const playlistContainer = document.getElementById('playlist-container');
 playlistContainer.innerHTML = '';
 
+console.log('User playlists to display:', user.userPlaylists);
+
 for (let pl of user.userPlaylists) {
   //create buttons for each playlist that use the User.selectPlaylist method when clicked and User.deselectPlaylist when clicked again
   const button = document.createElement('button');
