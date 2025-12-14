@@ -54,14 +54,12 @@ class User {
                 }
 
                 const data = await res.json();
-                console.log('Fetched playlists data:', data);
                 this.userPlaylists = (data.items || []).map(item => ({
                     id: item.id,
                     name: item.name,
                     uri: item.uri,
                     tracks: item.tracks?.total || 0
                 }));
-                console.log('User playlists loaded:', this.userPlaylists);
                 return this.userPlaylists;
             } catch (err) {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);

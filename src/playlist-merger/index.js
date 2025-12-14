@@ -33,4 +33,6 @@ for (let pl of user.userPlaylists) {
       selected = false;
     };
   });
+
+  playlistContainer.appendChild(button);
 }
