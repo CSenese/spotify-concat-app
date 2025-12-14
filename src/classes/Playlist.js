@@ -15,11 +15,11 @@ class Playlist {
     }
 
     /**
-     * Adds a song to the playlist.
-     * @param {Song} song
+     * get playlist
+     * @return {Playlist} playlist
      */
-    addSong(song) {
-        this.songs.push(song);
+    getPlaylist() {
+        return this;
     }
 }
 

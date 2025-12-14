@@ -1,3 +1,5 @@
+import User from "../classes/User";
+
 const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
 const selectedPlaylists = new Set();
 const allPlaylists = []; // stores all fetched playlists for later use
@@ -5,83 +7,18 @@ const finalPlaylist = []; // Stores all URIs to add to the merged playlist
 const savedPlaylists = {};
 let isPlaylistSelected = false;
 var userId = null; // Will be set after fetching current user ID
-
-import { getCurrentUserId } from '../functions/api-calls.js';
+let user = new User(accessToken);
 
 const SUPABASE_URL = `https://mkdcyzujpwiscipgnzxr.supabase.co`;
 const SUPABASE_PUBLISHABLE_KEY = `sb_publishable_fK6Nj4AvtyaXIdIgb2zViA_tLF0TB_p`;
 
-import SupabaseClient from '../classes/SupabaseClient.js';
+user.initSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
-// Initialize Supabase client asynchronously so we can surface import errors.
-let supabaseClient;
 try {
-  console.log('Initializing Supabase client', { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.slice(0, 8)}...` : undefined });
-  supabaseClient = new SupabaseClient(await SupabaseClient.init(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY));
-  console.log('Supabase client initialized', !!supabaseClient?.client);
+  user.loadUserPlaylists()
 } catch (err) {
-  console.error('Failed to initialize SupabaseClient', err);
+  console.error('Error loading user playlists:', err);
 }
-
-async function initializeUserId(accessToken) {
-  try {
-    userId = await getCurrentUserId(accessToken);
-    console.log('User ID:', userId);
-    // Continue to whatever needs userId here
-  } catch (error) {
-    console.error('Error fetching user ID:', error);
-    document.getElementById('playlist-container').innerText =
-      'Error fetching user ID. Please check your access token.';
-  }
-}
-
-if (!accessToken) {
-    document.getElementById('playlist-container').innerText = 'No access token found.';
-} else {
-    fetch(`https://api.spotify.com/v1/me/playlists`, {
-    headers: {
-        Authorization: `Bearer ${accessToken}`
-    }
-    })
-    .then(res => res.json())
-    .then(data => {
-    const container = document.getElementById('playlist-container');
-    container.innerHTML = '';
-
-    data.items.forEach(playlist => {
-        allPlaylists.push(playlist); // Store the playlist for later use
-        const btn = document.createElement('button');
-        btn.className = 'playlist-btn';
-        btn.innerText = playlist.name;
-        btn.dataset.playlistId = playlist.id; // Store the ID for later reference
-
-        btn.addEventListener('click', () => {
-        btn.classList.toggle('selected');
-        if (selectedPlaylists.has(playlist.id)) {
-            selectedPlaylists.delete(playlist.id);
-            removePlaylistBox(playlist.id);
-        } else {
-            selectedPlaylists.add(playlist.id);
-            addPlaylistBox(playlist);
-        }
-
-         // Refresh unselected list if checkbox is active
-        if (document.getElementById('includeTracks').checked) {
-            showUnselectedPlaylists();
-        }
-
-        console.log(Array.from(selectedPlaylists)); // Optional: for debugging
-        });
-
-        container.appendChild(btn);
-    });
-    })
-    .catch(err => {
-    document.getElementById('playlist-container').innerText = 'Error loading playlists.';
-    console.error(err);
-    });
-}
-
 
 document.getElementById('searchFriend').addEventListener('click', async () => {
   const friendUserId = document.getElementById('friendUserId').value.trim();
