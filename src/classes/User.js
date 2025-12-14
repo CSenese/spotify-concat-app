@@ -60,7 +60,6 @@ class User {
                     uri: item.uri,
                     tracks: item.tracks?.total || 0
                 }));
-                return this.userPlaylists;
             } catch (err) {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             }
@@ -74,6 +73,7 @@ class User {
      */
     selectPlaylist(playlist) {
         // Implementation to select a playlist
+        this.workingPlaylists.push(playlist);
     }
 
     /**
@@ -83,6 +83,7 @@ class User {
      */
     deselectPlaylist(playlist) {
         // Implementation to deselect a playlist
+        this.workingPlaylists = this.workingPlaylists.filter(pl => pl.id !== playlist.id);
     }
 
     /**
