@@ -1,5 +1,5 @@
 import User from "../classes/User.js";
-import { addSelectedPlaylist, removeSelectedPlaylist } from "../functions/selectedPlaylistsUI.js";
+import { createSelectedPlaylistManager } from '../functions/selectedPlaylistManager.js';
 
 const accessToken = sessionStorage.getItem('access_token'); // or manually paste one for testing
 let user = new User(accessToken);
@@ -20,7 +20,7 @@ const playlistContainer = document.getElementById('playlist-container');
 playlistContainer.innerHTML = '';
 
 console.log('User playlists to display:', user.userPlaylists);
-import { createSelectedPlaylistManager } from './functions/selectedPlaylistManager.js';
+
 const manager = createSelectedPlaylistManager(user);
 
 for (let pl of user.userPlaylists) {
