@@ -15,6 +15,9 @@ class User {
     constructor(accessToken, userPlaylists = [], workingPlaylists = [], supaPlaylists = [], supabaseClient = null) {
         this.accessToken = accessToken;
         this.userPlaylists = userPlaylists;
+        this.workingPlaylists = workingPlaylists;
+        this.supaPlaylists = supaPlaylists;
+        this.supabaseClient = supabaseClient;
     }
 
     /**
@@ -38,24 +41,28 @@ class User {
         if (!this.accessToken) {
             throw new Error('Access token is required to load user playlists.');
         } else {
-            // Fetch playlists from Spotify API using this.accessToken
-            let data = fetch(`https://api.spotify.com/v1/me/playlists`, {
-            headers: {
-                Authorization: `Bearer ${this.accessToken}`
-            }
-            })
-            .then(res => res.json())
-            .catch(err => {
-                throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
-            });
-            console.log(data);
-            for (let item of data.items) {
-                this.userPlaylists.push({
+            try {
+                const res = await fetch('https://api.spotify.com/v1/me/playlists', {
+                    headers: {
+                        Authorization: `Bearer ${this.accessToken}`
+                    }
+                });
+
+                if (!res.ok) {
+                    const body = await res.text();
+                    throw new Error(`Spotify API error ${res.status}: ${body}`);
+                }
+
+                const data = await res.json();
+                this.userPlaylists = (data.items || []).map(item => ({
                     id: item.id,
                     name: item.name,
                     uri: item.uri,
-                    tracks: item.tracks.total
-                });
+                    tracks: item.tracks?.total || 0
+                }));
+                return this.userPlaylists;
+            } catch (err) {
+                throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             }
         }
     }
