@@ -41,7 +41,7 @@ class User {
             // Fetch playlists from Spotify API using this.accessToken
             let data = fetch(`https://api.spotify.com/v1/me/playlists`, {
             headers: {
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${this.accessToken}`
             }
             })
             .then(res => res.json())
@@ -49,6 +49,7 @@ class User {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             });
             console.log(data);
+            return data.items; // Assuming data.items contains the list of playlists
         }
     }
 
