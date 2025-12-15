@@ -38,19 +38,17 @@ for (let pl of user.userPlaylists) {
   const button = document.createElement('button');
   button.className = 'playlist-btn';
   button.innerText = `${pl.name} (${pl.tracks} tracks)`;
-  let selected = false;
 
   button.addEventListener('click', () => {
-    if (!selected) {
+    const isSelected = button.classList.contains('selected');
+    if (!isSelected) {
       user.selectPlaylist(pl);
       manager.addSelectedPlaylist(pl);
       button.classList.add('selected');
-      selected = true;
     } else {
       user.deselectPlaylist(pl);
       manager.removeSelectedPlaylist(pl.id);
       button.classList.remove('selected');
-      selected = false;
     };
   });
 

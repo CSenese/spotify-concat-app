@@ -98,11 +98,143 @@ class User {
     /**
      * saves a playlist to supabase and spotify.  Probably the beefiest method here.
      * @async
-     * @param {Playlist} playlist
+     * @param {string} playlistName
      * @returns Promise<void>
      */    
-    async savePlaylist(playlist) {
+    async savePlaylist(playlistName) {
         // Implementation to save playlist to supabase and spotify
+        let body = {
+            "name": playlistName,
+            "description": "Playlist merged using Playlist Merger",
+            "public": true
+        }
+
+        try {
+            const res = await fetch('https://api.spotify.com/v1/me/playlists', {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`
+                },
+                body: JSON.stringify(body),
+                method: 'POST'
+            });
+
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Spotify API error ${res.status}: ${body}`);
+            }
+
+            const data = await res.json();
+            playListId = data.id;
+
+            // Now add tracks to the newly created playlist
+            const trackUris = this.workingPlaylists.flatMap(pl => pl.trackUris || []);
+            const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
+
+            for (let i = 0; i < trackUris.length; i += chunkSize) {
+                const chunk = trackUris.slice(i, i + chunkSize);
+                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/tracks`, {
+                    headers: {
+                        Authorization: `Bearer ${this.accessToken}`
+                    },
+                    body: JSON.stringify({ uris: chunk }),
+                    method: 'POST'
+                })
+                if (!addTracksRes.ok) {
+                    const body = await addTracksRes.text();
+                    throw new Error(`Spotify API error ${addTracksRes.status}: ${body}`);
+                }
+            };
+        } catch (err) {
+            throw new Error('Failed to create a playlist from Spotify: ' + err.message);
+        }
+
+        // Now save to Supabase
+        try {
+            const supaRes = await this.supabaseClient.supabase
+                .from('playlists')
+                .insert([{
+                    playlist_id: playListId,
+                    playlists: this.workingPlaylists.map(pl => pl.id),
+                    created_at: new Date().toISOString(),
+                    last_modified: new Date().toISOString()
+                }]);
+            if (supaRes.error) {
+                throw new Error('Supabase error: ' + supaRes.error.message);
+            }
+        } catch (err) {
+            throw new Error('Failed to save playlist to Supabase: ' + err.message);
+        }
+    }
+
+    /**
+     * replaces the tracks if the playlist already exists in spotify
+     * @async
+     * @param {string} playlistId
+     */
+    async replacePlaylistTracks(playlistId) {
+        // Implementation to replace playlist tracks
+        try {
+            const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`
+                }
+            });
+            playlistData = await res.json();
+            if (!res.ok) throw new Error('Playlist not found');
+
+            //use the replace endpoint to clear the playlist before adding new tracks
+            const replaceRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`
+                },
+                body: JSON.stringify({ uris: [] }),
+                method: 'PUT'
+            });
+
+            if (!replaceRes.ok) {
+                const body = await replaceRes.text();
+                throw new Error(`Spotify API error ${replaceRes.status}: ${body}`);
+            }
+
+            const trackUris = this.workingPlaylists.flatMap(pl => pl.trackUris || []);
+            const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
+
+            for (let i = 0; i < trackUris.length; i += chunkSize) {
+                const chunk = trackUris.slice(i, i + chunkSize);
+                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/tracks`, {
+                    headers: {
+                        Authorization: `Bearer ${this.accessToken}`
+                    },
+                    body: JSON.stringify({ uris: chunk }),
+                    method: 'POST'
+                })
+                if (!addTracksRes.ok) {
+                    const body = await addTracksRes.text();
+                    throw new Error(`Spotify API error ${addTracksRes.status}: ${body}`);
+                }
+            };
+
+        } catch (err) {
+            console.error('Error checking existing playlist:', err);
+            throw new Error('Failed to check existing playlist on Spotify: ' + err.message);
+        }
+
+        // Now update Supabase record
+        try {
+            const supaRes = await this.supabaseClient.supabase
+                .from('playlists')
+                .update({ playlists: this.workingPlaylists.map(pl => pl.id),
+                    last_modified: new Date().toISOString()
+                 })
+                .eq('playlist_id', playlistId);
+
+            if (supaRes.error) {
+                throw new Error('Supabase error: ' + supaRes.error.message);
+            }
+        } catch (err) {
+            throw new Error('Failed to update playlist in Supabase: ' + err.message);
+        }
+
     }
 
     /**
@@ -113,6 +245,15 @@ class User {
      */
     movePlaylist(direction, playlistId) {
         // Implementation to move playlist order
+        const index = this.workingPlaylists.findIndex(pl => pl.id === playlistId);
+        if (index === -1) return; // Playlist not found
+        if (direction === 'left' && index > 0) {
+            const [pl] = this.workingPlaylists.splice(index, 1);
+            this.workingPlaylists.splice(index - 1, 0, pl);
+        } else if (direction === 'right' && index < this.workingPlaylists.length - 1) {
+            const [pl] = this.workingPlaylists.splice(index, 1);
+            this.workingPlaylists.splice(index + 1, 0, pl);
+        }
     }
 
     /**
