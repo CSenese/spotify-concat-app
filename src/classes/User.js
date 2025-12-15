@@ -79,9 +79,7 @@ class User {
                 throw new Error(`Spotify API error ${res.status}: ${body}`);
             }
             const data = await res.json();
-            this.userId = data.email;
-            console.log('User ID set to:', this.userId);
-            console.log('entire user data:', data);
+            this.userId = data.id;
         } catch (err) {
             throw new Error('Failed to fetch user profile from Spotify: ' + err.message);
         }
