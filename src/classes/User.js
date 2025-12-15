@@ -157,7 +157,6 @@ class User {
                 .insert([{
                     playlist_id: playListId,
                     playlists: this.workingPlaylists.map(pl => pl.id),
-                    created_at: new Date().toISOString(),
                     last_modified: new Date().toISOString()
                 }]);
             if (supaRes.error) {
