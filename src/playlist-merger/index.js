@@ -23,6 +23,16 @@ console.log('User playlists to display:', user.userPlaylists);
 
 const manager = createSelectedPlaylistManager(user);
 
+// Add clear button functionality
+document.getElementById('clearWorkingPlaylists').addEventListener('click', () => {
+  user.workingPlaylists = [];
+  manager.syncFromModel();
+  // Deselect all playlist buttons
+  document.querySelectorAll('.playlist-btn.selected').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+});
+
 for (let pl of user.userPlaylists) {
   //create buttons for each playlist that use the User.selectPlaylist method when clicked and User.deselectPlaylist when clicked again
   const button = document.createElement('button');
