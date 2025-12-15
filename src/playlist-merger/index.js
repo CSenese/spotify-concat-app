@@ -55,3 +55,25 @@ for (let pl of user.userPlaylists) {
   playlistContainer.appendChild(button);
 }
 
+document.getElementById('mergePlaylists').addEventListener('click', async () => {
+  try {
+    const playlistName = document.getElementById('playlistName').value || 'A playlist merged using Spotify Playlist Merger App';
+    const isReplace = document.getElementById('includeTracks').checked;
+    
+    if (isReplace) {
+      const existingPlaylist = user.userPlaylists.find(p => p.name === playlistName);
+      if (!existingPlaylist) {
+        alert('Playlist not found. Please select an existing playlist to replace.');
+        return;
+      }
+      await user.replacePlaylistTracks(existingPlaylist.id);
+      alert(`Playlist "${playlistName}" tracks replaced successfully!`);
+    } else {
+      await user.savePlaylist(playlistName); 
+      alert(`New playlist "${playlistName}" created successfully!`);
+    }
+  } catch (err) {
+    console.error('Error merging playlists:', err);
+    alert('Failed to merge playlists. Please check the console for details.');
+  }
+});

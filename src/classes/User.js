@@ -109,6 +109,8 @@ class User {
             "public": true
         }
 
+        let playListId;
+
         try {
             const res = await fetch('https://api.spotify.com/v1/me/playlists', {
                 headers: {
