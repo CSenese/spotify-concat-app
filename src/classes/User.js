@@ -61,10 +61,6 @@ class User {
                     new Playlist(item.name, [], item.id, item.tracks?.total || 0)
                 );
 
-                for (let pl of this.userPlaylists) {
-                    await pl.loadSongs(this.accessToken);
-                }
-
             } catch (err) {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             }
@@ -150,6 +146,10 @@ class User {
             const data = await res.json();
             playListId = data.id;
 
+            for (let pl of this.workingPlaylists) {
+                await pl.loadSongs(this.accessToken);
+            }
+
             // Now add tracks to the newly created playlist
             const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
@@ -222,6 +222,10 @@ class User {
             if (!replaceRes.ok) {
                 const body = await replaceRes.text();
                 throw new Error(`Spotify API error ${replaceRes.status}: ${body}`);
+            }
+
+            for (let pl of this.workingPlaylists) {
+                await pl.loadSongs(this.accessToken);
             }
 
             const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));

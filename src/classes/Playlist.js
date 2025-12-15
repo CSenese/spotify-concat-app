@@ -23,14 +23,25 @@ class Playlist {
      * @returns {Promise<void>}
      */
     async loadSongs(accessToken) {
-        //get the songs from spotify
-        const response = await fetch(`https://api.spotify.com/v1/playlists/${this.playlistId}/tracks`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-        const data = await response.json();
-        this.songs = data.items.map(item => 
+        //get all songs from spotify with pagination
+        let allItems = [];
+        let offset = 0;
+        const limit = 100;
+        let hasMore = true;
+        
+        while (hasMore) {
+            const response = await fetch(`https://api.spotify.com/v1/playlists/${this.playlistId}/tracks?limit=${limit}&offset=${offset}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
+            allItems = allItems.concat(data.items);
+            offset += limit;
+            hasMore = data.next !== null;
+        }
+        
+        this.songs = allItems.map(item => 
             new Song(item.track.name, item.track.id, item.track.uri)
         );
     }
