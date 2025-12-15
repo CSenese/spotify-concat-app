@@ -7,13 +7,15 @@ import SupabaseClient from '../classes/SupabaseClient.js';
 class User {
     /**
      * @param {string} accessToken
+     * @param {string} userId
      * @param {Playlist[]} userPlaylists
      * @param {Playlist[]} workingPlaylists
      * @param {Playlist[]} supaPlaylists
      * @param {SupabaseClient} supabaseClient
      */
-    constructor(accessToken, userPlaylists = [], workingPlaylists = [], supaPlaylists = [], supabaseClient = null) {
+    constructor(accessToken, userId = '', userPlaylists = [], workingPlaylists = [], supaPlaylists = [], supabaseClient = null) {
         this.accessToken = accessToken;
+        this.userId = userId;
         this.userPlaylists = userPlaylists;
         this.workingPlaylists = workingPlaylists;
         this.supaPlaylists = supaPlaylists;
@@ -63,6 +65,23 @@ class User {
             } catch (err) {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             }
+        }
+
+        //gets the user's email to use as userId
+        try {
+            const res = await fetch('https://api.spotify.com/v1/me', {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`
+                }
+            });
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Spotify API error ${res.status}: ${body}`);
+            }
+            const data = await res.json();
+            this.userId = data.email;
+        } catch (err) {
+            throw new Error('Failed to fetch user profile from Spotify: ' + err.message);
         }
     }
 
@@ -155,6 +174,7 @@ class User {
             const supaRes = await this.supabaseClient.client
                 .from('playlists')
                 .insert([{
+                    user_id: this.userId,
                     playlist_id: playListId,
                     playlists: this.workingPlaylists.map(pl => pl.id),
                     last_modified: new Date().toISOString()
