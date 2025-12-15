@@ -152,7 +152,7 @@ class User {
 
         // Now save to Supabase
         try {
-            const supaRes = await this.supabaseClient.supabase
+            const supaRes = await this.supabaseClient.client
                 .from('playlists')
                 .insert([{
                     playlist_id: playListId,
@@ -223,7 +223,7 @@ class User {
 
         // Now update Supabase record
         try {
-            const supaRes = await this.supabaseClient.supabase
+            const supaRes = await this.supabaseClient.client
                 .from('playlists')
                 .update({ playlists: this.workingPlaylists.map(pl => pl.id),
                     last_modified: new Date().toISOString()
