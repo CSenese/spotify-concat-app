@@ -151,6 +151,8 @@ class User {
             const trackUris = this.workingPlaylists.flatMap(pl => pl.trackUris || []);
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
 
+            console.log('Track URIs to add:', trackUris);
+
             for (let i = 0; i < trackUris.length; i += chunkSize) {
                 const chunk = trackUris.slice(i, i + chunkSize);
                 console.log('Adding tracks chunk:', chunk);
