@@ -1,4 +1,5 @@
 import SupabaseClient from '../classes/SupabaseClient.js';
+import Playlist from '../classes/Playlist.js';
 
 /**
  * Represents a User.
@@ -56,12 +57,14 @@ class User {
                 }
 
                 const data = await res.json();
-                this.userPlaylists = (data.items || []).map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    uri: item.uri,
-                    tracks: item.tracks?.total || 0
-                }));
+                this.userPlaylists = (data.items || []).map(item => 
+                    new Playlist(item.name, [], item.id, item.tracks?.total || 0)
+                );
+
+                for (let pl of this.userPlaylists) {
+                    await pl.loadSongs(this.accessToken);
+                }
+
             } catch (err) {
                 throw new Error('Failed to fetch user playlists from Spotify: ' + err.message);
             }
@@ -148,7 +151,7 @@ class User {
             playListId = data.id;
 
             // Now add tracks to the newly created playlist
-            const trackUris = this.workingPlaylists.flatMap(pl => pl.trackUris || []);
+            const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
 
             console.log('Track URIs to add:', trackUris);
@@ -221,7 +224,7 @@ class User {
                 throw new Error(`Spotify API error ${replaceRes.status}: ${body}`);
             }
 
-            const trackUris = this.workingPlaylists.flatMap(pl => pl.trackUris || []);
+            const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
 
             for (let i = 0; i < trackUris.length; i += chunkSize) {

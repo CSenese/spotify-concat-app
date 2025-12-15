@@ -6,10 +6,12 @@ class Song {
     /**
      * @param {string} name
      * @param {string} id
+     * @param {string} uri
      */
-    constructor(name = '', id = '') {
+    constructor(name = '', id = '', uri = '') {
         this.name = name;
         this.id = id;
+        this.uri = uri;
     }
 }
 
