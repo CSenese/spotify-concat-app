@@ -23,8 +23,8 @@
     .saved-playlist-btn {
     display: flex;
     flex-direction: column;
-    margin: 10px 0;
-    padding: 8px 16px;
+    margin: 5px 0;
+    padding: 4px 8px;
     background-color: #1DB954; /* Spotify green */
     color: white;
     border: none;
@@ -32,17 +32,20 @@
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    gap: 5px;
+    gap: 3px;
+    width: fit-content;
+    max-width: 300px;
   }
 
   .saved-playlist-btn button {
     background-color: #1DB954;
     color: white;
     border: none;
-    padding: 8px 12px;
+    padding: 4px 8px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    font-size: 12px;
   }
 
   .saved-playlist-btn button:hover {
@@ -56,7 +59,7 @@
 </head>
 <body>
   <h1>Select Your Playlists</h1>
-  <div id="selectedPlaylistsRow" style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;"></div>
+  <div id="selectedPlaylistsRow" style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 6px;"></div>
   <div id="playlist-container">Loading playlists...</div>
   <h2>Search Friend's Public Playlists</h2>
   <input type="text" id="friendUserId" placeholder="Enter friend's Spotify username" />
