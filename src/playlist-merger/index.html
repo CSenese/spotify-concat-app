@@ -21,7 +21,8 @@
       color: white;
     }
     .saved-playlist-btn {
-    display: block;
+    display: flex;
+    flex-direction: column;
     margin: 10px 0;
     padding: 8px 16px;
     background-color: #1DB954; /* Spotify green */
@@ -31,6 +32,21 @@
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    gap: 5px;
+  }
+
+  .saved-playlist-btn button {
+    background-color: #1DB954;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .saved-playlist-btn button:hover {
+    background-color: #1ed760;
   }
 
   .saved-playlist-btn:hover {
