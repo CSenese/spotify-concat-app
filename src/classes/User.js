@@ -153,6 +153,7 @@ class User {
 
             for (let i = 0; i < trackUris.length; i += chunkSize) {
                 const chunk = trackUris.slice(i, i + chunkSize);
+                console.log('Adding tracks chunk:', chunk);
                 const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/tracks`, {
                     headers: {
                         Authorization: `Bearer ${this.accessToken}`
@@ -162,6 +163,7 @@ class User {
                 })
                 if (!addTracksRes.ok) {
                     const body = await addTracksRes.text();
+                    console.error('Error adding tracks:', body);
                     throw new Error(`Spotify API error ${addTracksRes.status}: ${body}`);
                 }
             };
