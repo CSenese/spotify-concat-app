@@ -105,7 +105,7 @@ class User {
      */
     deselectPlaylist(playlist) {
         // Implementation to deselect a playlist
-        this.workingPlaylists = this.workingPlaylists.filter(pl => pl.id !== playlist.id);
+        this.workingPlaylists = this.workingPlaylists.filter(pl => pl.playlistId !== playlist.playlistId);
     }
 
     /**
@@ -273,7 +273,7 @@ class User {
      */
     movePlaylist(direction, playlistId) {
         // Implementation to move playlist order
-        const index = this.workingPlaylists.findIndex(pl => pl.id === playlistId);
+        const index = this.workingPlaylists.findIndex(pl => pl.playlistId === playlistId);
         if (index === -1) return; // Playlist not found
         if (direction === 'left' && index > 0) {
             const [pl] = this.workingPlaylists.splice(index, 1);

@@ -37,7 +37,7 @@ for (let pl of user.userPlaylists) {
   //create buttons for each playlist that use the User.selectPlaylist method when clicked and User.deselectPlaylist when clicked again
   const button = document.createElement('button');
   button.className = 'playlist-btn';
-  button.innerText = `${pl.name} (${pl.tracks} tracks)`;
+  button.innerText = `${pl.playlistName} (${pl.tracks} tracks)`;
 
   button.addEventListener('click', () => {
     const isSelected = button.classList.contains('selected');
@@ -47,7 +47,7 @@ for (let pl of user.userPlaylists) {
       button.classList.add('selected');
     } else {
       user.deselectPlaylist(pl);
-      manager.removeSelectedPlaylist(pl.id);
+      manager.removeSelectedPlaylist(pl.playlistId);
       button.classList.remove('selected');
     };
   });

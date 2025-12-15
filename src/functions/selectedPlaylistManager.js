@@ -1,15 +1,22 @@
+
+/**
+ * Creates a manager for selected playlists UI
+ * @param {User} user - User instance with workingPlaylists
+ * @param {HTMLElement} container - Container element for playlist buttons
+ * @returns {Object} Manager object with control methods
+ */
 export function createSelectedPlaylistManager(user, container = document.getElementById('selectedPlaylistsRow')) {
   function addSelectedPlaylist(pl) {
-    if (container.querySelector(`[data-id="${pl.id}"]`)) return;
+    if (container.querySelector(`[data-id="${pl.playlistId}"]`)) return;
     const wrap = document.createElement('div');
-    wrap.dataset.id = pl.id;
+    wrap.dataset.id = pl.playlistId;
     wrap.className = 'saved-playlist-btn';
     const left = document.createElement('button'); left.textContent = '◀';
-    const center = document.createElement('button'); center.textContent = pl.name;
+    const center = document.createElement('button'); center.textContent = pl.playlistName;
     const right = document.createElement('button'); right.textContent = '▶';
-    left.addEventListener('click', () => moveLeft(pl.id));
-    center.addEventListener('click', () => removeSelectedPlaylist(pl.id));
-    right.addEventListener('click', () => moveRight(pl.id));
+    left.addEventListener('click', () => moveLeft(pl.playlistId));
+    center.addEventListener('click', () => removeSelectedPlaylist(pl.playlistId));
+    right.addEventListener('click', () => moveRight(pl.playlistId));
     wrap.append(left, center, right);
     container.appendChild(wrap);
   }
@@ -17,7 +24,11 @@ export function createSelectedPlaylistManager(user, container = document.getElem
   function removeSelectedPlaylist(id) {
     const el = container.querySelector(`[data-id="${id}"]`);
     if (el) el.remove();
-    user.deselectPlaylist(id);
+    // Find the playlist object and remove it from working playlists
+    const playlist = user.workingPlaylists.find(pl => pl.playlistId === id);
+    if (playlist) {
+      user.deselectPlaylist(playlist);
+    }
   }
 
   function moveLeft(id) {
