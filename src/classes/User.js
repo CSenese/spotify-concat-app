@@ -207,7 +207,6 @@ class User {
                     Authorization: `Bearer ${this.accessToken}`
                 }
             });
-            playlistData = await res.json();
             if (!res.ok) throw new Error('Playlist not found');
 
             //use the replace endpoint to clear the playlist before adding new tracks
