@@ -31,6 +31,7 @@ document.getElementById('clearWorkingPlaylists').addEventListener('click', () =>
   document.querySelectorAll('.playlist-btn.selected').forEach(btn => {
     btn.classList.remove('selected');
   });
+  updateReplaceablePlaylistsList();
 });
 
 for (let pl of user.userPlaylists) {
@@ -45,10 +46,12 @@ for (let pl of user.userPlaylists) {
       user.selectPlaylist(pl);
       manager.addSelectedPlaylist(pl);
       button.classList.add('selected');
+      updateReplaceablePlaylistsList();
     } else {
       user.deselectPlaylist(pl);
       manager.removeSelectedPlaylist(pl.playlistId);
       button.classList.remove('selected');
+      updateReplaceablePlaylistsList();
     };
   });
 
@@ -77,3 +80,35 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
     alert('Failed to merge playlists. Please check the console for details.');
   }
 });
+
+
+document.getElementById('includeTracks').addEventListener('change', (e) => {
+  updateReplaceablePlaylistsList();
+  if (e.target.checked) {
+    document.getElementById('playlistName').disabled = true;
+  } else {
+    document.getElementById('playlistName').disabled = false;
+    document.getElementById('replaceablePlaylists').innerHTML = '';
+  }
+});
+
+// Function to update the replaceable playlists list
+function updateReplaceablePlaylistsList() {
+  const isReplaceMode = document.getElementById('includeTracks').checked;
+  if (!isReplaceMode) return;
+  
+  // Filter out playlists that are in workingPlaylists
+  const workingIds = user.workingPlaylists.map(pl => pl.playlistId);
+  const replaceablePlaylists = user.userPlaylists.filter(pl => !workingIds.includes(pl.playlistId));
+
+  document.getElementById('replaceablePlaylists').innerHTML = '';
+  replaceablePlaylists.forEach(pl => {
+    const option = document.createElement('button');
+    option.value = pl.playlistId;
+    option.textContent = pl.playlistName;
+    option.addEventListener('click', () => {
+      document.getElementById('playlistName').value = pl.playlistName;
+    });
+    document.getElementById('replaceablePlaylists').appendChild(option);
+  });
+}
