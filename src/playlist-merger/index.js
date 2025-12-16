@@ -1,3 +1,4 @@
+import Playlist from "../classes/Playlist.js";
 import User from "../classes/User.js";
 import { createSelectedPlaylistManager } from '../functions/selectedPlaylistManager.js';
 
@@ -64,12 +65,12 @@ document.getElementById('mergePlaylists').addEventListener('click', async () => 
     const isReplace = document.getElementById('includeTracks').checked;
     
     if (isReplace) {
-      const existingPlaylist = user.userPlaylists.find(p => p.name === playlistName);
+      const existingPlaylist = user.userPlaylists.find(p => p.playlistName === playlistName);
       if (!existingPlaylist) {
         alert('Playlist not found. Please select an existing playlist to replace.');
         return;
       }
-      await user.replacePlaylistTracks(existingPlaylist.id);
+      await user.replacePlaylistTracks(existingPlaylist.playlistId);
       alert(`Playlist "${playlistName}" tracks replaced successfully!`);
     } else {
       await user.savePlaylist(playlistName); 
