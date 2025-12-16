@@ -241,7 +241,9 @@ class User {
             }
 
             // Now add tracks to the newly created playlist
-            const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
+            const trackUris = this.workingPlaylists
+                .flatMap(pl => pl.songs.map(s => s.uri))
+                .filter(uri => uri && uri.startsWith('spotify:track:')); // Filter out invalid URIs
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
 
             console.log('Track URIs to add:', trackUris);
@@ -320,7 +322,9 @@ class User {
                 }
             }
 
-            const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
+            const trackUris = this.workingPlaylists
+                .flatMap(pl => pl.songs.map(s => s.uri))
+                .filter(uri => uri && uri.startsWith('spotify:track:')); // Filter out invalid URIs
             const chunkSize = 100; // Spotify API allows adding up to 100 tracks at a time
 
             for (let i = 0; i < trackUris.length; i += chunkSize) {

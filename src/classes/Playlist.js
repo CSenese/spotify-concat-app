@@ -41,9 +41,12 @@ class Playlist {
             hasMore = data.next !== null;
         }
         
-        this.songs = allItems.map(item => 
-            new Song(item.track.name, item.track.id, item.track.uri)
-        );
+        // Filter out null/unavailable tracks and map to Song objects
+        this.songs = allItems
+            .filter(item => item.track && item.track.uri && item.track.id)
+            .map(item => 
+                new Song(item.track.name, item.track.id, item.track.uri)
+            );
     }
 }
 
