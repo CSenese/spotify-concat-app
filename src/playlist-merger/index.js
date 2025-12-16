@@ -163,9 +163,9 @@ document.getElementById('searchFriend').addEventListener('click', async () => {
   try {
     const playlist = await user.getPlaylistFromUrl(playlistUrl);
     const friendContainer = document.getElementById('friendPlaylists');
-    
+
     createPlaylistButton(playlist, { container: friendContainer });
-    docuument.getElementById('friendUserId').value = '';
+    document.getElementById('friendUserId').value = '';
   } catch (err) {
     console.error('Error loading playlist:', err);
     alert('Failed to load playlist. Please check the console for details.');
