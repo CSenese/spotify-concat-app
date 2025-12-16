@@ -184,6 +184,25 @@ user.loadSupaPlaylists().then(() => {
     button.className = 'playlist-btn';
     button.innerText = `${pl.playlistName} (${pl.tracks} tracks)`;
     button.addEventListener('click', async () => {
+      const isCurrentlyLoaded = button.classList.contains('selected');
+      
+      if (isCurrentlyLoaded) {
+        // Unload the saved playlist configuration
+        user.workingPlaylists = [];
+        manager.syncFromModel();
+        document.querySelectorAll('.playlist-btn.selected').forEach(btn => {
+          btn.classList.remove('selected');
+        });
+        button.classList.remove('selected');
+        
+        // Uncheck replace mode and clear playlist name
+        document.getElementById('includeTracks').checked = false;
+        document.getElementById('playlistName').value = '';
+        document.getElementById('playlistName').disabled = false;
+        document.getElementById('replaceablePlaylists').innerHTML = '';
+        return;
+      }
+      
       showLoading('Loading playlist configuration...');
       try {
         // Load the source playlists that made up this merged playlist
@@ -196,6 +215,12 @@ user.loadSupaPlaylists().then(() => {
           btn.classList.remove('selected');
         });
         
+        // Set replace mode and populate playlist name
+        document.getElementById('includeTracks').checked = true;
+        document.getElementById('playlistName').value = pl.playlistName;
+        document.getElementById('playlistName').disabled = true;
+        updateReplaceablePlaylistsList();
+        
         // Add each retrieved playlist to working playlists
         for (let rpl of retrievedPlaylists) {
           user.selectPlaylist(rpl);
@@ -206,12 +231,18 @@ user.loadSupaPlaylists().then(() => {
           if (userButton) {
             userButton.classList.add('selected');
           } else {
-            // Playlist not in user's playlists, add to friend playlists area
+            // Playlist not in user's playlists, check if button already exists in friend area
             const friendContainer = document.getElementById('friendPlaylists');
-            createPlaylistButton(rpl, { isSelected: true, container: friendContainer });
+            const existingButton = friendContainer.querySelector(`.playlist-btn[data-id="${rpl.playlistId}"]`);
+            if (!existingButton) {
+              createPlaylistButton(rpl, { isSelected: true, container: friendContainer });
+            } else {
+              existingButton.classList.add('selected');
+            }
           }
         }
         updateReplaceablePlaylistsList();
+        button.classList.add('selected');
       } catch (err) {
         console.error('Error loading playlist configuration:', err);
         alert('Failed to load playlist configuration.');
