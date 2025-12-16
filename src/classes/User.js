@@ -111,6 +111,93 @@ class User {
      */
     async loadSupaPlaylists() {
         // Implementation to load supabase playlists
+        if (!this.supabaseClient) {
+            throw new Error('Supabase client is not initialized.');
+        }
+        let supaRes;
+        try {
+            supaRes = await this.supabaseClient.client
+                .from('playlists')
+                .select('*')
+                .eq('user_id', this.userId);
+        } catch (err) {
+            throw new Error('Failed to load playlists from Supabase: ' + err.message);
+        }
+        if (supaRes.error) {
+            throw new Error('Supabase error: ' + supaRes.error.message);
+        }
+        //need to go to spotify to get playlist details
+        this.supaPlaylists = [];
+        for (let record of supaRes.data) {
+            try {
+                const res = await fetch(`https://api.spotify.com/v1/playlists/${record.playlist_id}`, {
+                    headers: {
+                        Authorization: `Bearer ${this.accessToken}`
+                    }
+                });
+                if (!res.ok) {
+                    const body = await res.text();
+                    throw new Error(`Spotify API error ${res.status}: ${body}`);
+                }
+                const data = await res.json();
+                const playlist = new Playlist(data.name, [], data.id, data.tracks?.total || 0);
+                this.supaPlaylists.push(playlist);
+            } catch (err) {
+                console.error('Failed to fetch playlist from Spotify:', err);
+            }
+        }
+    }
+
+    /**
+     * another load step to get the playlist IDs from supabase and return it to allow the manager to render them
+     * @async
+     * @param {string} playlistId
+     * @returns Promise<Playlist []>
+     */
+    async loadWorkingPlaylistsFromSupa(playlistId) {
+        // Implementation to load working playlists from supabase record
+        if (!this.supabaseClient) {
+            throw new Error('Supabase client is not initialized.');
+        }
+        let supaRes;
+        try {
+            supaRes = await this.supabaseClient.client
+                .from('playlists')
+                .select('*')
+                .eq('playlist_id', playlistId)
+                .single();
+        } catch (err) {
+            throw new Error('Failed to load playlists from Supabase: ' + err.message);
+        }
+        if (supaRes.error) {
+            throw new Error('Supabase error: ' + supaRes.error.message);
+        }
+        let tempPlaylists = [];
+        for (let plId of supaRes.data.playlists) {
+            const pl = this.userPlaylists.find(p => p.playlistId === plId);
+            if (pl) {
+                tempPlaylists.push(pl);
+            } else {
+                //this playlist is from another user so me must fetch it from spotify
+                try {
+                    const res = await fetch(`https://api.spotify.com/v1/playlists/${plId}`, {
+                        headers: {
+                            Authorization: `Bearer ${this.accessToken}`
+                        }
+                    });
+                    if (!res.ok) {
+                        const body = await res.text();
+                        throw new Error(`Spotify API error ${res.status}: ${body}`);
+                    }
+                    const data = await res.json();
+                    const playlist = new Playlist(data.name, [], data.id, data.tracks?.total || 0);
+                    tempPlaylists.push(playlist);
+                } catch (err) {
+                    console.error('Failed to fetch playlist from Spotify:', err);
+                }
+            }
+        }
+        return tempPlaylists;
     }
 
     /**
@@ -146,8 +233,11 @@ class User {
             const data = await res.json();
             playListId = data.id;
 
+            // Load songs for playlists that don't have them cached
             for (let pl of this.workingPlaylists) {
-                await pl.loadSongs(this.accessToken);
+                if (!pl.songs || pl.songs.length === 0) {
+                    await pl.loadSongs(this.accessToken);
+                }
             }
 
             // Now add tracks to the newly created playlist
@@ -183,7 +273,7 @@ class User {
                 .insert([{
                     user_id: this.userId,
                     playlist_id: playListId,
-                    playlists: this.workingPlaylists.map(pl => pl.id),
+                    playlists: this.workingPlaylists.map(pl => pl.playlistId),
                     last_modified: new Date().toISOString()
                 }]);
             if (supaRes.error) {
@@ -223,8 +313,11 @@ class User {
                 throw new Error(`Spotify API error ${replaceRes.status}: ${body}`);
             }
 
+            // Load songs for playlists that don't have them cached
             for (let pl of this.workingPlaylists) {
-                await pl.loadSongs(this.accessToken);
+                if (!pl.songs || pl.songs.length === 0) {
+                    await pl.loadSongs(this.accessToken);
+                }
             }
 
             const trackUris = this.workingPlaylists.flatMap(pl => pl.songs.map(s => s.uri));
