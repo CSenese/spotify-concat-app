@@ -113,3 +113,36 @@ function updateReplaceablePlaylistsList() {
     document.getElementById('replaceablePlaylists').appendChild(option);
   });
 }
+
+
+document.getElementById('searchFriend').addEventListener('click', async () => {
+  const friendId = document.getElementById('friendUserId').value;
+  try {
+    const friendPlaylists = await user.getFriendPublicPlaylists(friendId);
+    const friendContainer = document.getElementById('friendPlaylists');
+    friendContainer.innerHTML = '';
+    friendPlaylists.forEach(pl => {
+      const button = document.createElement('button');
+      button.className = 'playlist-btn';
+      button.innerText = `${pl.playlistName} (${pl.tracks} tracks)`;
+      button.addEventListener('click', () => {
+        const isSelected = button.classList.contains('selected');
+        if (!isSelected) {
+          user.selectPlaylist(pl);
+          manager.addSelectedPlaylist(pl);
+          button.classList.add('selected');
+          updateReplaceablePlaylistsList();
+        } else {
+          user.deselectPlaylist(pl);
+          manager.removeSelectedPlaylist(pl.playlistId);
+          button.classList.remove('selected');
+          updateReplaceablePlaylistsList();
+        };
+      });
+      friendContainer.appendChild(button);
+    });
+  } catch (err) {
+    console.error('Error loading friend playlists:', err);
+    alert('Failed to load friend playlists. Please check the console for details.');
+  } 
+});

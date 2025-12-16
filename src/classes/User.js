@@ -288,15 +288,6 @@ class User {
     }
 
     /**
-     * retrieve playlist by id from user playlists
-     * @param {string} playlistId
-     * @returns Playlist
-     */
-    getUserPlaylistById(playlistId) {
-        // Implementation to get user playlist by id
-    }
-
-    /**
      * retrieve public playlists of friend from spotify
      * @async
      * @param {string} friendId
@@ -304,6 +295,23 @@ class User {
      */
     async getFriendPublicPlaylists(friendId) {
         // Implementation to get friend's public playlists
+        try {
+            const res = await fetch(`https://api.spotify.com/v1/users/${friendId}/playlists`, {
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`
+                }
+            });
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Spotify API error ${res.status}: ${body}`);
+            }
+            const data = await res.json();
+            return (data.items || []).map(item => 
+                new Playlist(item.name, [], item.id, item.tracks?.total || 0)
+            );
+        } catch (err) {
+            throw new Error('Failed to fetch friend\'s public playlists from Spotify: ' + err.message);
+        }
     }
     
 }
