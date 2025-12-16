@@ -385,15 +385,29 @@ class User {
     }
 
     /**
-     * retrieve public playlists of friend from spotify
+     * get a playlist from a Spotify URL
      * @async
-     * @param {string} friendId
-     * @returns Promise<Playlist[]>
+     * @param {string} playlistUrl - Spotify playlist URL (e.g., https://open.spotify.com/playlist/ID...)
+     * @returns Promise<Playlist>
      */
-    async getFriendPublicPlaylists(friendId) {
-        // Implementation to get friend's public playlists
+    async getPlaylistFromUrl(playlistUrl) {
+        // Extract playlist ID from URL
+        // URL format: https://open.spotify.com/playlist/ID?query_params
+        let playlistId;
         try {
-            const res = await fetch(`https://api.spotify.com/v1/users/${friendId}/playlists`, {
+            const urlParts = playlistUrl.split('/playlist/');
+            if (urlParts.length < 2) {
+                throw new Error('Invalid Spotify playlist URL');
+            }
+            // Remove query parameters if present
+            playlistId = urlParts[1].split('?')[0];
+        } catch (err) {
+            throw new Error('Failed to extract playlist ID from URL: ' + err.message);
+        }
+
+        // Fetch playlist details from Spotify
+        try {
+            const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
                 headers: {
                     Authorization: `Bearer ${this.accessToken}`
                 }
@@ -403,11 +417,9 @@ class User {
                 throw new Error(`Spotify API error ${res.status}: ${body}`);
             }
             const data = await res.json();
-            return (data.items || []).map(item => 
-                new Playlist(item.name, [], item.id, item.tracks?.total || 0)
-            );
+            return new Playlist(data.name, [], data.id, data.tracks?.total || 0);
         } catch (err) {
-            throw new Error('Failed to fetch friend\'s public playlists from Spotify: ' + err.message);
+            throw new Error('Failed to fetch playlist from Spotify: ' + err.message);
         }
     }
     

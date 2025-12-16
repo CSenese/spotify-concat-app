@@ -153,23 +153,22 @@ function updateReplaceablePlaylistsList() {
 
 
 document.getElementById('searchFriend').addEventListener('click', async () => {
-  const friendId = document.getElementById('friendUserId').value;
-  if (!friendId) {
-    alert('Please enter a Spotify username');
+  const playlistUrl = document.getElementById('friendUserId').value;
+  if (!playlistUrl) {
+    alert('Please enter a Spotify playlist URL');
     return;
   }
   
-  showLoading('Loading friend\'s playlists...');
+  showLoading('Loading playlist...');
   try {
-    const friendPlaylists = await user.getFriendPublicPlaylists(friendId);
+    const playlist = await user.getPlaylistFromUrl(playlistUrl);
     const friendContainer = document.getElementById('friendPlaylists');
-    friendContainer.innerHTML = '';
-    friendPlaylists.forEach(pl => {
-      createPlaylistButton(pl, { container: friendContainer });
-    });
+    
+    createPlaylistButton(playlist, { container: friendContainer });
+    docuument.getElementById('friendUserId').value = '';
   } catch (err) {
-    console.error('Error loading friend playlists:', err);
-    alert('Failed to load friend playlists. Please check the console for details.');
+    console.error('Error loading playlist:', err);
+    alert('Failed to load playlist. Please check the console for details.');
   } finally {
     hideLoading();
   }
