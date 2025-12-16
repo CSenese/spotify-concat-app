@@ -232,7 +232,7 @@ class User {
 
             for (let i = 0; i < trackUris.length; i += chunkSize) {
                 const chunk = trackUris.slice(i, i + chunkSize);
-                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/tracks`, {
+                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
                     headers: {
                         Authorization: `Bearer ${this.accessToken}`
                     },
@@ -254,7 +254,7 @@ class User {
         try {
             const supaRes = await this.supabaseClient.client
                 .from('playlists')
-                .update({ playlists: this.workingPlaylists.map(pl => pl.id),
+                .update({ playlists: this.workingPlaylists.map(pl => pl.playlistId),
                     last_modified: new Date().toISOString()
                  })
                 .eq('playlist_id', playlistId);
