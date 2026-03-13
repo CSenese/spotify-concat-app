@@ -1,4 +1,5 @@
-import SupabaseClient from '../classes/SupabaseClient.js';
+// import SupabaseClient from '../classes/SupabaseClient.js';
+import FileStorage from '../classes/FileStorage.js';
 import Playlist from '../classes/Playlist.js';
 
 /**
@@ -12,15 +13,16 @@ class User {
      * @param {Playlist[]} userPlaylists
      * @param {Playlist[]} workingPlaylists
      * @param {Playlist[]} supaPlaylists
-     * @param {SupabaseClient} supabaseClient
+     * @param {FileStorage} fileStorage
      */
-    constructor(accessToken, userId = '', userPlaylists = [], workingPlaylists = [], supaPlaylists = [], supabaseClient = null) {
+    constructor(accessToken, userId = '', userPlaylists = [], workingPlaylists = [], supaPlaylists = [], fileStorage = null) {
         this.accessToken = accessToken;
         this.userId = userId;
         this.userPlaylists = userPlaylists;
         this.workingPlaylists = workingPlaylists;
         this.supaPlaylists = supaPlaylists;
-        this.supabaseClient = supabaseClient;
+        // this.supabaseClient = supabaseClient;
+        this.fileStorage = fileStorage || new FileStorage();
     }
 
     /**
@@ -30,9 +32,9 @@ class User {
      * @param {string} publishableKey
      * @returns Promise<void>
      */
-    async initSupabaseClient(url, publishableKey) {
-        this.supabaseClient = new SupabaseClient(await SupabaseClient.init(url, publishableKey));
-    }
+    // async initSupabaseClient(url, publishableKey) {
+    //     this.supabaseClient = new SupabaseClient(await SupabaseClient.init(url, publishableKey));
+    // }
 
     /**
      * loads the user's playlists from spotify and return the list so that the front * end can render them
@@ -105,30 +107,31 @@ class User {
     }
 
     /**
-     * loads the user's supabase playlists and return the list so that the front end can render them
+     * loads the user's saved playlists from file storage and return the list so that the front end can render them
      * @async
      * @returns Promise<Playlist[]>
      */
     async loadSupaPlaylists() {
-        // Implementation to load supabase playlists
-        if (!this.supabaseClient) {
-            throw new Error('Supabase client is not initialized.');
-        }
-        let supaRes;
+        // Implementation to load saved playlists from file storage
+        // if (!this.supabaseClient) {
+        //     throw new Error('Supabase client is not initialized.');
+        // }
+        let savedRecords;
         try {
-            supaRes = await this.supabaseClient.client
-                .from('playlists')
-                .select('*')
-                .eq('user_id', this.userId);
+            savedRecords = await this.fileStorage.fetchSavedPlaylists(this.userId);
+            // supaRes = await this.supabaseClient.client
+            //     .from('playlists')
+            //     .select('*')
+            //     .eq('user_id', this.userId);
         } catch (err) {
-            throw new Error('Failed to load playlists from Supabase: ' + err.message);
+            throw new Error('Failed to load playlists from storage: ' + err.message);
         }
-        if (supaRes.error) {
-            throw new Error('Supabase error: ' + supaRes.error.message);
-        }
+        // if (supaRes.error) {
+        //     throw new Error('Supabase error: ' + supaRes.error.message);
+        // }
         //need to go to spotify to get playlist details
         this.supaPlaylists = [];
-        for (let record of supaRes.data) {
+        for (let record of savedRecords) {
             try {
                 const res = await fetch(`https://api.spotify.com/v1/playlists/${record.playlist_id}`, {
                     headers: {
@@ -149,31 +152,36 @@ class User {
     }
 
     /**
-     * another load step to get the playlist IDs from supabase and return it to allow the manager to render them
+     * another load step to get the playlist IDs from file storage and return it to allow the manager to render them
      * @async
      * @param {string} playlistId
      * @returns Promise<Playlist []>
      */
     async loadWorkingPlaylistsFromSupa(playlistId) {
-        // Implementation to load working playlists from supabase record
-        if (!this.supabaseClient) {
-            throw new Error('Supabase client is not initialized.');
-        }
-        let supaRes;
+        // Implementation to load working playlists from file storage record
+        // if (!this.supabaseClient) {
+        //     throw new Error('Supabase client is not initialized.');
+        // }
+        let savedRecords;
         try {
-            supaRes = await this.supabaseClient.client
-                .from('playlists')
-                .select('*')
-                .eq('playlist_id', playlistId)
-                .single();
+            savedRecords = await this.fileStorage.fetchSavedPlaylists(this.userId);
+            // supaRes = await this.supabaseClient.client
+            //     .from('playlists')
+            //     .select('*')
+            //     .eq('playlist_id', playlistId)
+            //     .single();
         } catch (err) {
-            throw new Error('Failed to load playlists from Supabase: ' + err.message);
+            throw new Error('Failed to load playlists from storage: ' + err.message);
         }
-        if (supaRes.error) {
-            throw new Error('Supabase error: ' + supaRes.error.message);
+        // if (supaRes.error) {
+        //     throw new Error('Supabase error: ' + supaRes.error.message);
+        // }
+        const record = savedRecords.find(r => r.playlist_id === playlistId);
+        if (!record) {
+            throw new Error('Playlist record not found in storage');
         }
         let tempPlaylists = [];
-        for (let plId of supaRes.data.playlists) {
+        for (let plId of record.playlists) {
             const pl = this.userPlaylists.find(p => p.playlistId === plId);
             if (pl) {
                 tempPlaylists.push(pl);
@@ -268,21 +276,26 @@ class User {
             throw new Error('Failed to create a playlist from Spotify: ' + err.message);
         }
 
-        // Now save to Supabase
+        // Now save to file storage
         try {
-            const supaRes = await this.supabaseClient.client
-                .from('playlists')
-                .insert([{
-                    user_id: this.userId,
-                    playlist_id: playListId,
-                    playlists: this.workingPlaylists.map(pl => pl.playlistId),
-                    last_modified: new Date().toISOString()
-                }]);
-            if (supaRes.error) {
-                throw new Error('Supabase error: ' + supaRes.error.message);
-            }
+            await this.fileStorage.storePlaylist(
+                this.workingPlaylists.map(pl => pl.playlistId),
+                playListId,
+                this.userId
+            );
+            // const supaRes = await this.supabaseClient.client
+            //     .from('playlists')
+            //     .insert([{
+            //         user_id: this.userId,
+            //         playlist_id: playListId,
+            //         playlists: this.workingPlaylists.map(pl => pl.playlistId),
+            //         last_modified: new Date().toISOString()
+            //     }]);
+            // if (supaRes.error) {
+            //     throw new Error('Supabase error: ' + supaRes.error.message);
+            // }
         } catch (err) {
-            throw new Error('Failed to save playlist to Supabase: ' + err.message);
+            throw new Error('Failed to save playlist to storage: ' + err.message);
         }
     }
 
@@ -347,20 +360,25 @@ class User {
             throw new Error('Failed to check existing playlist on Spotify: ' + err.message);
         }
 
-        // Now update Supabase record
+        // Now update file storage record
         try {
-            const supaRes = await this.supabaseClient.client
-                .from('playlists')
-                .update({ playlists: this.workingPlaylists.map(pl => pl.playlistId),
-                    last_modified: new Date().toISOString()
-                 })
-                .eq('playlist_id', playlistId);
+            await this.fileStorage.storePlaylist(
+                this.workingPlaylists.map(pl => pl.playlistId),
+                playlistId,
+                this.userId
+            );
+            // const supaRes = await this.supabaseClient.client
+            //     .from('playlists')
+            //     .update({ playlists: this.workingPlaylists.map(pl => pl.playlistId),
+            //         last_modified: new Date().toISOString()
+            //      })
+            //     .eq('playlist_id', playlistId);
 
-            if (supaRes.error) {
-                throw new Error('Supabase error: ' + supaRes.error.message);
-            }
+            // if (supaRes.error) {
+            //     throw new Error('Supabase error: ' + supaRes.error.message);
+            // }
         } catch (err) {
-            throw new Error('Failed to update playlist in Supabase: ' + err.message);
+            throw new Error('Failed to update playlist in storage: ' + err.message);
         }
 
     }
