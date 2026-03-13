@@ -1,6 +1,6 @@
-// import SupabaseClient from '../classes/SupabaseClient.js';
-import FileStorage from '../classes/FileStorage.js';
-import Playlist from '../classes/Playlist.js';
+// import SupabaseClient from './SupabaseClient.js';
+import FileStorage from './FileStorage.js';
+import Playlist from './Playlist.js';
 
 /**
  * Represents a User.
