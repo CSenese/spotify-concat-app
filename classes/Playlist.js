@@ -30,7 +30,7 @@ class Playlist {
         let hasMore = true;
         
         while (hasMore) {
-            const response = await fetch(`https://api.spotify.com/v1/playlists/${this.playlistId}/tracks?limit=${limit}&offset=${offset}`, {
+            const response = await fetch(`https://api.spotify.com/v1/playlists/${this.playlistId}/items?limit=${limit}&offset=${offset}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }

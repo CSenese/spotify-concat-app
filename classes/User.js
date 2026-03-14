@@ -47,19 +47,31 @@ class User {
             throw new Error('Access token is required to load user playlists.');
         } else {
             try {
-                const res = await fetch('https://api.spotify.com/v1/me/playlists', {
-                    headers: {
-                        Authorization: `Bearer ${this.accessToken}`
-                    }
-                });
+                // Fetch all playlists with pagination
+                let allItems = [];
+                let offset = 0;
+                const limit = 50;
+                let hasMore = true;
+                
+                while (hasMore) {
+                    const res = await fetch(`https://api.spotify.com/v1/me/playlists?limit=${limit}&offset=${offset}`, {
+                        headers: {
+                            Authorization: `Bearer ${this.accessToken}`
+                        }
+                    });
 
-                if (!res.ok) {
-                    const body = await res.text();
-                    throw new Error(`Spotify API error ${res.status}: ${body}`);
+                    if (!res.ok) {
+                        const body = await res.text();
+                        throw new Error(`Spotify API error ${res.status}: ${body}`);
+                    }
+
+                    const data = await res.json();
+                    allItems = allItems.concat(data.items);
+                    offset += limit;
+                    hasMore = data.next !== null;
                 }
 
-                const data = await res.json();
-                this.userPlaylists = (data.items || []).map(item => 
+                this.userPlaylists = (allItems || []).map(item => 
                     new Playlist(item.name, [], item.id, item.tracks?.total || 0)
                 );
 
@@ -259,7 +271,7 @@ class User {
             for (let i = 0; i < trackUris.length; i += chunkSize) {
                 const chunk = trackUris.slice(i, i + chunkSize);
                 console.log('Adding tracks chunk:', chunk);
-                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/tracks`, {
+                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playListId}/items`, {
                     headers: {
                         Authorization: `Bearer ${this.accessToken}`
                     },
@@ -297,6 +309,8 @@ class User {
         } catch (err) {
             throw new Error('Failed to save playlist to storage: ' + err.message);
         }
+
+        return playListId;
     }
 
     /**
@@ -315,7 +329,7 @@ class User {
             if (!res.ok) throw new Error('Playlist not found');
 
             //use the replace endpoint to clear the playlist before adding new tracks
-            const replaceRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+            const replaceRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/items`, {
                 headers: {
                     Authorization: `Bearer ${this.accessToken}`
                 },
@@ -342,7 +356,7 @@ class User {
 
             for (let i = 0; i < trackUris.length; i += chunkSize) {
                 const chunk = trackUris.slice(i, i + chunkSize);
-                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/items`, {
                     headers: {
                         Authorization: `Bearer ${this.accessToken}`
                     },
