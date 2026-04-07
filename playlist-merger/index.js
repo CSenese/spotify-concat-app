@@ -84,6 +84,13 @@ document.getElementById('clearWorkingPlaylists').addEventListener('click', () =>
   updateReplaceablePlaylistsList();
 });
 
+document.getElementById('reauthSpotify').addEventListener('click', () => {
+  sessionStorage.removeItem('access_token');
+  sessionStorage.removeItem('code_verifier');
+  // Send the user back to the root login page so they can sign in again.
+  window.location.href = '../index.html';
+});
+
 for (let pl of user.userPlaylists) {
   createPlaylistButton(pl, { container: playlistContainer });
 }

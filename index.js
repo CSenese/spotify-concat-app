@@ -1,6 +1,3 @@
-import { generateCodeVerifier, generateCodeChallenge } from './functions/pkce-authenticator.js';
-
-
 
 function updateUIForAuth() {
   const loginBtn = document.getElementById('login');
@@ -29,23 +26,27 @@ if (accessToken) {
 }
 
 document.getElementById('login').onclick = async () => {
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-  // Store code verifier in localStorage for later use
-  sessionStorage.setItem('code_verifier', codeVerifier);
-  console.log('Generated code verifier:', codeVerifier);
+  console.log('Login button clicked - redirecting to Spotify authorization');
+  
 
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: '97462b80a7864533a23a82791a1f662f',
-    scope: 'playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative',
-    redirect_uri: 'https://young-pseudoeducational-mayola.ngrok-free.dev',
-    code_challenge_method: 'S256',
-    code_challenge: codeChallenge
+    scope: 'playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative user-modify-playback-state user-read-playback-state',
+    redirect_uri: 'https://young-pseudoeducational-mayola.ngrok-free.dev/',
+    show_dialog: 'true'
   });
 
-  window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+  const authUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
+  console.log('Redirecting to:', authUrl);
+  window.location.href = authUrl;
+};
+
+document.getElementById('clearSession').onclick = () => {
+  sessionStorage.clear();
+  accessToken = null;
+  updateUIForAuth();
+  alert('Session cleared! You can now log in again.');
 };
 
 
@@ -53,41 +54,37 @@ async function getAccessToken() {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
 
+  console.log('Checking for authorization code in URL:', code ? 'Found' : 'Not found');
+
   if (!code) return;
 
-  const codeVerifier = sessionStorage.getItem('code_verifier');
-  console.log('Retrieved code verifier:', codeVerifier);
-
-  if (!codeVerifier) {
-    console.error('Code verifier not found in localStorage.');  
-    return;
-  }
+  console.log('Authorization code received, exchanging for token...');
 
   const body = new URLSearchParams({
     client_id: '97462b80a7864533a23a82791a1f662f',
     grant_type: 'authorization_code',
     code: code,
-    redirect_uri: 'https://young-pseudoeducational-mayola.ngrok-free.dev',
-    code_verifier: codeVerifier
+    redirect_uri: 'https://young-pseudoeducational-mayola.ngrok-free.dev/',
   });
 
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + btoa('97462b80a7864533a23a82791a1f662f' + ':' + 'a134b70178794cb18304fb8467cdfb95'),
     },
     body: body
   });
 
   const data = await response.json();
-  console.log('Response from token endpoint:', data);
-  accessToken = data.access_token;
-  if (!accessToken) {
+  console.log('Token exchange response:', data);
+  
+  if (!data.access_token) {
     console.error('Failed to retrieve access token:', data);
     return;
   }
 
-  console.log('Access Token:', data.access_token);
+  console.log('Access Token obtained successfully');
   storeAccessToken(data.access_token);
   updateUIForAuth();
 }

@@ -1,4 +1,6 @@
 
+import { startPlayback } from './api-calls.js';
+
 /**
  * Creates a manager for selected playlists UI
  * @param {User} user - User instance with workingPlaylists
@@ -14,10 +16,23 @@ export function createSelectedPlaylistManager(user, container = document.getElem
     const left = document.createElement('button'); left.textContent = '◀';
     const center = document.createElement('button'); center.textContent = pl.playlistName;
     const right = document.createElement('button'); right.textContent = '▶';
+    const play = document.createElement('button'); play.textContent = '⏵'; play.title = 'Play playlist'; play.className = 'play-playlist-btn';
     left.addEventListener('click', () => moveLeft(pl.playlistId));
     center.addEventListener('click', () => removeSelectedPlaylist(pl.playlistId));
     right.addEventListener('click', () => moveRight(pl.playlistId));
-    wrap.append(left, center, right);
+    play.addEventListener('click', async () => {
+      if (!user.accessToken) {
+        alert('Playback requires a valid Spotify access token.');
+        return;
+      }
+      try {
+        await startPlayback(user.accessToken, pl.playlistId);
+      } catch (err) {
+        console.error('Failed to start playback:', err);
+        alert('Unable to start playback. Check console for details.');
+      }
+    });
+    wrap.append(left, center, right, play);
     container.appendChild(wrap);
   }
 
