@@ -40,7 +40,7 @@ document.getElementById('login').onclick = async () => {
     response_type: 'code',
     client_id: '97462b80a7864533a23a82791a1f662f',
     scope: 'playlist-read-private playlist-modify-public playlist-modify-private playlist-read-collaborative',
-    redirect_uri: 'https://spotify-concat-app.vercel.app/',
+    redirect_uri: 'https://young-pseudoeducational-mayola.ngrok-free.dev',
     code_challenge_method: 'S256',
     code_challenge: codeChallenge
   });
